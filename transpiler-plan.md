@@ -20,7 +20,7 @@
 
 Each stage is intended to be a separate commit.
 
-### 1. Isolate the compilation pipeline
+### 1. Isolate the compilation pipeline (complete)
 
 - Separate scanning, parsing, and resolution from execution so the future
   emitter can consume a resolved program without running it.
@@ -30,7 +30,7 @@ Each stage is intended to be a separate commit.
   front-end error, existing interpreter behavior remains intact, and Go tests
   pass.
 
-### 2. Add Python source support helpers
+### 2. Add Python source support helpers (in progress)
 
 - Add only the self-contained Python helper definitions needed to express Lox
   behavior that Python does not directly provide, such as Lox truthiness,
