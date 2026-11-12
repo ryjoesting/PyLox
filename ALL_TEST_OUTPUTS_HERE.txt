@@ -1,0 +1,520 @@
+=== RUN   TestExpressionNodesImplementExpr
+--- PASS: TestExpressionNodesImplementExpr (0.00s)
+=== RUN   TestAstPrinterPrintsCallExpressions
+--- PASS: TestAstPrinterPrintsCallExpressions (0.00s)
+=== RUN   TestExpressionNodesPreserveFields
+--- PASS: TestExpressionNodesPreserveFields (0.00s)
+=== RUN   TestAstPrinterPrintsNestedExpression
+--- PASS: TestAstPrinterPrintsNestedExpression (0.00s)
+=== RUN   TestAstPrinterPrintsLiteralValues
+=== RUN   TestAstPrinterPrintsLiteralValues/nil
+=== RUN   TestAstPrinterPrintsLiteralValues/string
+=== RUN   TestAstPrinterPrintsLiteralValues/number
+--- PASS: TestAstPrinterPrintsLiteralValues (0.00s)
+    --- PASS: TestAstPrinterPrintsLiteralValues/nil (0.00s)
+    --- PASS: TestAstPrinterPrintsLiteralValues/string (0.00s)
+    --- PASS: TestAstPrinterPrintsLiteralValues/number (0.00s)
+=== RUN   TestCompileSourceReturnsResolvedProgram
+--- PASS: TestCompileSourceReturnsResolvedProgram (0.00s)
+=== RUN   TestCompileSourceReturnsFrontEndErrors
+=== RUN   TestCompileSourceReturnsFrontEndErrors/scan_error
+=== RUN   TestCompileSourceReturnsFrontEndErrors/parse_error
+=== RUN   TestCompileSourceReturnsFrontEndErrors/resolve_error
+--- PASS: TestCompileSourceReturnsFrontEndErrors (0.00s)
+    --- PASS: TestCompileSourceReturnsFrontEndErrors/scan_error (0.00s)
+    --- PASS: TestCompileSourceReturnsFrontEndErrors/parse_error (0.00s)
+    --- PASS: TestCompileSourceReturnsFrontEndErrors/resolve_error (0.00s)
+=== RUN   TestEnvironmentDefinesAndGetsValues
+--- PASS: TestEnvironmentDefinesAndGetsValues (0.00s)
+=== RUN   TestEnvironmentAllowsRedefinition
+--- PASS: TestEnvironmentAllowsRedefinition (0.00s)
+=== RUN   TestEnvironmentAssignsExistingValues
+--- PASS: TestEnvironmentAssignsExistingValues (0.00s)
+=== RUN   TestEnvironmentRejectsAssignmentToUndefinedValue
+--- PASS: TestEnvironmentRejectsAssignmentToUndefinedValue (0.00s)
+=== RUN   TestEnvironmentFindsEnclosingValues
+--- PASS: TestEnvironmentFindsEnclosingValues (0.00s)
+=== RUN   TestEnvironmentAssignsEnclosingValues
+--- PASS: TestEnvironmentAssignsEnclosingValues (0.00s)
+=== RUN   TestEnvironmentGetsAndAssignsAtDistance
+--- PASS: TestEnvironmentGetsAndAssignsAtDistance (0.00s)
+=== RUN   TestEnvironmentRejectsMissingDistanceTargets
+--- PASS: TestEnvironmentRejectsMissingDistanceTargets (0.00s)
+=== RUN   TestEnvironmentStoresNil
+--- PASS: TestEnvironmentStoresNil (0.00s)
+=== RUN   TestEnvironmentReportsUndefinedValues
+--- PASS: TestEnvironmentReportsUndefinedValues (0.00s)
+=== RUN   TestInterpreterEvaluatesExpressions
+=== RUN   TestInterpreterEvaluatesExpressions/123
+=== RUN   TestInterpreterEvaluatesExpressions/"123"
+=== RUN   TestInterpreterEvaluatesExpressions/(1_+_2)_*_3
+=== RUN   TestInterpreterEvaluatesExpressions/-5
+=== RUN   TestInterpreterEvaluatesExpressions/!nil
+=== RUN   TestInterpreterEvaluatesExpressions/1_+_2_*_3
+=== RUN   TestInterpreterEvaluatesExpressions/"hello"_+_"_world"
+=== RUN   TestInterpreterEvaluatesExpressions/1_<_2
+=== RUN   TestInterpreterEvaluatesExpressions/nil_==_nil
+=== RUN   TestInterpreterEvaluatesExpressions/false_==_nil
+=== RUN   TestInterpreterEvaluatesExpressions/1,_2,_3
+=== RUN   TestInterpreterEvaluatesExpressions/true_?_1_:_2
+=== RUN   TestInterpreterEvaluatesExpressions/false_?_1_:_2
+=== RUN   TestInterpreterEvaluatesExpressions/"hi"_or_2
+=== RUN   TestInterpreterEvaluatesExpressions/nil_or_"yes"
+=== RUN   TestInterpreterEvaluatesExpressions/false_and_"no"
+=== RUN   TestInterpreterEvaluatesExpressions/true_and_"yes"
+--- PASS: TestInterpreterEvaluatesExpressions (0.00s)
+    --- PASS: TestInterpreterEvaluatesExpressions/123 (0.00s)
+    --- PASS: TestInterpreterEvaluatesExpressions/"123" (0.00s)
+    --- PASS: TestInterpreterEvaluatesExpressions/(1_+_2)_*_3 (0.00s)
+    --- PASS: TestInterpreterEvaluatesExpressions/-5 (0.00s)
+    --- PASS: TestInterpreterEvaluatesExpressions/!nil (0.00s)
+    --- PASS: TestInterpreterEvaluatesExpressions/1_+_2_*_3 (0.00s)
+    --- PASS: TestInterpreterEvaluatesExpressions/"hello"_+_"_world" (0.00s)
+    --- PASS: TestInterpreterEvaluatesExpressions/1_<_2 (0.00s)
+    --- PASS: TestInterpreterEvaluatesExpressions/nil_==_nil (0.00s)
+    --- PASS: TestInterpreterEvaluatesExpressions/false_==_nil (0.00s)
+    --- PASS: TestInterpreterEvaluatesExpressions/1,_2,_3 (0.00s)
+    --- PASS: TestInterpreterEvaluatesExpressions/true_?_1_:_2 (0.00s)
+    --- PASS: TestInterpreterEvaluatesExpressions/false_?_1_:_2 (0.00s)
+    --- PASS: TestInterpreterEvaluatesExpressions/"hi"_or_2 (0.00s)
+    --- PASS: TestInterpreterEvaluatesExpressions/nil_or_"yes" (0.00s)
+    --- PASS: TestInterpreterEvaluatesExpressions/false_and_"no" (0.00s)
+    --- PASS: TestInterpreterEvaluatesExpressions/true_and_"yes" (0.00s)
+=== RUN   TestInterpreterLogicalOperatorsShortCircuit
+=== RUN   TestInterpreterLogicalOperatorsShortCircuit/true_or_missing
+=== RUN   TestInterpreterLogicalOperatorsShortCircuit/false_and_missing
+=== RUN   TestInterpreterLogicalOperatorsShortCircuit/nil_or_"fallback"
+=== RUN   TestInterpreterLogicalOperatorsShortCircuit/true_and_42
+--- PASS: TestInterpreterLogicalOperatorsShortCircuit (0.00s)
+    --- PASS: TestInterpreterLogicalOperatorsShortCircuit/true_or_missing (0.00s)
+    --- PASS: TestInterpreterLogicalOperatorsShortCircuit/false_and_missing (0.00s)
+    --- PASS: TestInterpreterLogicalOperatorsShortCircuit/nil_or_"fallback" (0.00s)
+    --- PASS: TestInterpreterLogicalOperatorsShortCircuit/true_and_42 (0.00s)
+=== RUN   TestInterpreterConditionalEvaluationIsLazy
+--- PASS: TestInterpreterConditionalEvaluationIsLazy (0.00s)
+=== RUN   TestInterpreterExecutesFunctionsAndReturns
+--- PASS: TestInterpreterExecutesFunctionsAndReturns (0.00s)
+=== RUN   TestInterpreterReturnsNilFromBareReturn
+--- PASS: TestInterpreterReturnsNilFromBareReturn (0.00s)
+=== RUN   TestInterpreterStringifiesFunctions
+--- PASS: TestInterpreterStringifiesFunctions (0.00s)
+=== RUN   TestInterpreterSupportsClosuresAndRecursion
+--- PASS: TestInterpreterSupportsClosuresAndRecursion (0.00s)
+=== RUN   TestInterpreterSupportsClassesFieldsMethodsAndInitializers
+--- PASS: TestInterpreterSupportsClassesFieldsMethodsAndInitializers (0.00s)
+=== RUN   TestInterpreterBindsMethodsWhenExtracted
+--- PASS: TestInterpreterBindsMethodsWhenExtracted (0.00s)
+=== RUN   TestInterpreterFieldsOverrideMethods
+--- PASS: TestInterpreterFieldsOverrideMethods (0.00s)
+=== RUN   TestInterpreterSupportsInheritanceAndSuper
+--- PASS: TestInterpreterSupportsInheritanceAndSuper (0.00s)
+=== RUN   TestInterpreterBindsExtractedSuperMethod
+--- PASS: TestInterpreterBindsExtractedSuperMethod (0.00s)
+=== RUN   TestInterpreterInheritsInitializer
+--- PASS: TestInterpreterInheritsInitializer (0.00s)
+=== RUN   TestInterpreterClassErrors
+=== RUN   TestInterpreterClassErrors/non-instance_get
+=== RUN   TestInterpreterClassErrors/non-instance_set
+=== RUN   TestInterpreterClassErrors/missing_property
+=== RUN   TestInterpreterClassErrors/initializer_arity
+=== RUN   TestInterpreterClassErrors/non-class_superclass
+=== RUN   TestInterpreterClassErrors/missing_superclass_method
+--- PASS: TestInterpreterClassErrors (0.00s)
+    --- PASS: TestInterpreterClassErrors/non-instance_get (0.00s)
+    --- PASS: TestInterpreterClassErrors/non-instance_set (0.00s)
+    --- PASS: TestInterpreterClassErrors/missing_property (0.00s)
+    --- PASS: TestInterpreterClassErrors/initializer_arity (0.00s)
+    --- PASS: TestInterpreterClassErrors/non-class_superclass (0.00s)
+    --- PASS: TestInterpreterClassErrors/missing_superclass_method (0.00s)
+=== RUN   TestInterpreterFunctionErrors
+=== RUN   TestInterpreterFunctionErrors/non-callable
+=== RUN   TestInterpreterFunctionErrors/too_few_arguments
+=== RUN   TestInterpreterFunctionErrors/too_many_arguments
+=== RUN   TestInterpreterFunctionErrors/top-level_return
+--- PASS: TestInterpreterFunctionErrors (0.00s)
+    --- PASS: TestInterpreterFunctionErrors/non-callable (0.00s)
+    --- PASS: TestInterpreterFunctionErrors/too_few_arguments (0.00s)
+    --- PASS: TestInterpreterFunctionErrors/too_many_arguments (0.00s)
+    --- PASS: TestInterpreterFunctionErrors/top-level_return (0.00s)
+=== RUN   TestInterpreterRuntimeErrors
+=== RUN   TestInterpreterRuntimeErrors/-"text"
+=== RUN   TestInterpreterRuntimeErrors/1_+_true
+=== RUN   TestInterpreterRuntimeErrors/true_<_false
+--- PASS: TestInterpreterRuntimeErrors (0.00s)
+    --- PASS: TestInterpreterRuntimeErrors/-"text" (0.00s)
+    --- PASS: TestInterpreterRuntimeErrors/1_+_true (0.00s)
+    --- PASS: TestInterpreterRuntimeErrors/true_<_false (0.00s)
+=== RUN   TestInterpreterReportsNumericOperandErrors
+=== RUN   TestInterpreterReportsNumericOperandErrors/-"text"
+=== RUN   TestInterpreterReportsNumericOperandErrors/"text"_-_1
+=== RUN   TestInterpreterReportsNumericOperandErrors/"text"_/_1
+=== RUN   TestInterpreterReportsNumericOperandErrors/"text"_*_1
+=== RUN   TestInterpreterReportsNumericOperandErrors/"text"_>_1
+=== RUN   TestInterpreterReportsNumericOperandErrors/"text"_>=_1
+=== RUN   TestInterpreterReportsNumericOperandErrors/"text"_<_1
+=== RUN   TestInterpreterReportsNumericOperandErrors/"text"_<=_1
+--- PASS: TestInterpreterReportsNumericOperandErrors (0.00s)
+    --- PASS: TestInterpreterReportsNumericOperandErrors/-"text" (0.00s)
+    --- PASS: TestInterpreterReportsNumericOperandErrors/"text"_-_1 (0.00s)
+    --- PASS: TestInterpreterReportsNumericOperandErrors/"text"_/_1 (0.00s)
+    --- PASS: TestInterpreterReportsNumericOperandErrors/"text"_*_1 (0.00s)
+    --- PASS: TestInterpreterReportsNumericOperandErrors/"text"_>_1 (0.00s)
+    --- PASS: TestInterpreterReportsNumericOperandErrors/"text"_>=_1 (0.00s)
+    --- PASS: TestInterpreterReportsNumericOperandErrors/"text"_<_1 (0.00s)
+    --- PASS: TestInterpreterReportsNumericOperandErrors/"text"_<=_1 (0.00s)
+=== RUN   TestInterpreterRuntimeErrorIncludesTokenContext
+--- PASS: TestInterpreterRuntimeErrorIncludesTokenContext (0.00s)
+=== RUN   TestInterpreterCanBeReusedAfterRuntimeError
+--- PASS: TestInterpreterCanBeReusedAfterRuntimeError (0.00s)
+=== RUN   TestInterpreterRuntimeErrorsDoNotPanic
+=== RUN   TestInterpreterRuntimeErrorsDoNotPanic/-"text"
+=== RUN   TestInterpreterRuntimeErrorsDoNotPanic/true_*_2
+=== RUN   TestInterpreterRuntimeErrorsDoNotPanic/"text"_<_"other"
+--- PASS: TestInterpreterRuntimeErrorsDoNotPanic (0.00s)
+    --- PASS: TestInterpreterRuntimeErrorsDoNotPanic/-"text" (0.00s)
+    --- PASS: TestInterpreterRuntimeErrorsDoNotPanic/true_*_2 (0.00s)
+    --- PASS: TestInterpreterRuntimeErrorsDoNotPanic/"text"_<_"other" (0.00s)
+=== RUN   TestStringify
+--- PASS: TestStringify (0.00s)
+=== RUN   TestRunSourceReturnsPipelineErrors
+--- PASS: TestRunSourceReturnsPipelineErrors (0.00s)
+=== RUN   TestRunFileStatusCodes
+=== RUN   TestRunFileStatusCodes/success
+=== RUN   TestRunFileStatusCodes/parse_error
+[line 1] Error at end: Expect expression.
+=== RUN   TestRunFileStatusCodes/runtime_error
+[line 1] RuntimeError at '+': Operands must be two numbers or two strings.
+Error reading file: open missing-file.lox: The system cannot find the file specified.
+--- PASS: TestRunFileStatusCodes (0.01s)
+    --- PASS: TestRunFileStatusCodes/success (0.00s)
+    --- PASS: TestRunFileStatusCodes/parse_error (0.00s)
+    --- PASS: TestRunFileStatusCodes/runtime_error (0.00s)
+=== RUN   TestParserPrecedence
+--- PASS: TestParserPrecedence (0.00s)
+=== RUN   TestParserAssociativity
+--- PASS: TestParserAssociativity (0.00s)
+=== RUN   TestParserCommaAndConditionalPrecedence
+--- PASS: TestParserCommaAndConditionalPrecedence (0.00s)
+=== RUN   TestParserPrimaryExpressions
+--- PASS: TestParserPrimaryExpressions (0.00s)
+=== RUN   TestParserCallExpressions
+--- PASS: TestParserCallExpressions (0.00s)
+=== RUN   TestParserBuildsFunctionDeclarations
+--- PASS: TestParserBuildsFunctionDeclarations (0.00s)
+=== RUN   TestParserBuildsClassDeclarations
+--- PASS: TestParserBuildsClassDeclarations (0.00s)
+=== RUN   TestParserBuildsClassSuperclass
+--- PASS: TestParserBuildsClassSuperclass (0.00s)
+=== RUN   TestParserLimitsFunctionArgumentsAndParameters
+--- PASS: TestParserLimitsFunctionArgumentsAndParameters (0.00s)
+=== RUN   TestParserAcceptsFunctionArgumentAndParameterLimit
+--- PASS: TestParserAcceptsFunctionArgumentAndParameterLimit (0.00s)
+=== RUN   TestParserSyntaxErrors
+=== RUN   TestParserSyntaxErrors/missing_operand
+=== RUN   TestParserSyntaxErrors/missing_parenthesis
+=== RUN   TestParserSyntaxErrors/invalid_primary
+=== RUN   TestParserSyntaxErrors/missing_semicolon
+--- PASS: TestParserSyntaxErrors (0.00s)
+    --- PASS: TestParserSyntaxErrors/missing_operand (0.00s)
+    --- PASS: TestParserSyntaxErrors/missing_parenthesis (0.00s)
+    --- PASS: TestParserSyntaxErrors/invalid_primary (0.00s)
+    --- PASS: TestParserSyntaxErrors/missing_semicolon (0.00s)
+=== RUN   TestParserLeadingBinaryOperatorErrors
+=== RUN   TestParserLeadingBinaryOperatorErrors/+_1
+=== RUN   TestParserLeadingBinaryOperatorErrors/==_1
+=== RUN   TestParserLeadingBinaryOperatorErrors/<_1
+=== RUN   TestParserLeadingBinaryOperatorErrors/*_3
+=== RUN   TestParserLeadingBinaryOperatorErrors//_3
+=== RUN   TestParserLeadingBinaryOperatorErrors/,_4
+=== RUN   TestParserLeadingBinaryOperatorErrors/1_+_*_2
+--- PASS: TestParserLeadingBinaryOperatorErrors (0.00s)
+    --- PASS: TestParserLeadingBinaryOperatorErrors/+_1 (0.00s)
+    --- PASS: TestParserLeadingBinaryOperatorErrors/==_1 (0.00s)
+    --- PASS: TestParserLeadingBinaryOperatorErrors/<_1 (0.00s)
+    --- PASS: TestParserLeadingBinaryOperatorErrors/*_3 (0.00s)
+    --- PASS: TestParserLeadingBinaryOperatorErrors//_3 (0.00s)
+    --- PASS: TestParserLeadingBinaryOperatorErrors/,_4 (0.00s)
+    --- PASS: TestParserLeadingBinaryOperatorErrors/1_+_*_2 (0.00s)
+=== RUN   TestParserConditionalErrors
+=== RUN   TestParserConditionalErrors/true_?_1
+=== RUN   TestParserConditionalErrors/true_?_:_1
+=== RUN   TestParserConditionalErrors/true_?_1_:
+--- PASS: TestParserConditionalErrors (0.00s)
+    --- PASS: TestParserConditionalErrors/true_?_1 (0.00s)
+    --- PASS: TestParserConditionalErrors/true_?_:_1 (0.00s)
+    --- PASS: TestParserConditionalErrors/true_?_1_: (0.00s)
+=== RUN   TestParserAssignmentErrors
+=== RUN   TestParserAssignmentErrors/1_=_2
+=== RUN   TestParserAssignmentErrors/(a)_=_3
+=== RUN   TestParserAssignmentErrors/a_+_b_=_c
+--- PASS: TestParserAssignmentErrors (0.00s)
+    --- PASS: TestParserAssignmentErrors/1_=_2 (0.00s)
+    --- PASS: TestParserAssignmentErrors/(a)_=_3 (0.00s)
+    --- PASS: TestParserAssignmentErrors/a_+_b_=_c (0.00s)
+=== RUN   TestParseSourceWiresScannerAndParser
+--- PASS: TestParseSourceWiresScannerAndParser (0.00s)
+=== RUN   TestParseSourceReturnsErrorsWithoutAnExpression
+--- PASS: TestParseSourceReturnsErrorsWithoutAnExpression (0.00s)
+=== RUN   TestPythonEmitterExpressions
+=== RUN   TestPythonEmitterExpressions/nil
+=== RUN   TestPythonEmitterExpressions/true
+=== RUN   TestPythonEmitterExpressions/123
+=== RUN   TestPythonEmitterExpressions/"text"
+=== RUN   TestPythonEmitterExpressions/a_=_1
+=== RUN   TestPythonEmitterExpressions/1_+_2_*_3
+=== RUN   TestPythonEmitterExpressions/!_-1
+=== RUN   TestPythonEmitterExpressions/1_!=_2
+=== RUN   TestPythonEmitterExpressions/a_and_b
+=== RUN   TestPythonEmitterExpressions/a_or_b
+=== RUN   TestPythonEmitterExpressions/a_?_b_:_c
+=== RUN   TestPythonEmitterExpressions/(a,_b)
+=== RUN   TestPythonEmitterExpressions/f(1,_2)
+=== RUN   TestPythonEmitterExpressions/object.field
+=== RUN   TestPythonEmitterExpressions/object.field_=_2
+=== RUN   TestPythonEmitterExpressions/this
+=== RUN   TestPythonEmitterExpressions/super.method
+--- PASS: TestPythonEmitterExpressions (0.00s)
+    --- PASS: TestPythonEmitterExpressions/nil (0.00s)
+    --- PASS: TestPythonEmitterExpressions/true (0.00s)
+    --- PASS: TestPythonEmitterExpressions/123 (0.00s)
+    --- PASS: TestPythonEmitterExpressions/"text" (0.00s)
+    --- PASS: TestPythonEmitterExpressions/a_=_1 (0.00s)
+    --- PASS: TestPythonEmitterExpressions/1_+_2_*_3 (0.00s)
+    --- PASS: TestPythonEmitterExpressions/!_-1 (0.00s)
+    --- PASS: TestPythonEmitterExpressions/1_!=_2 (0.00s)
+    --- PASS: TestPythonEmitterExpressions/a_and_b (0.00s)
+    --- PASS: TestPythonEmitterExpressions/a_or_b (0.00s)
+    --- PASS: TestPythonEmitterExpressions/a_?_b_:_c (0.00s)
+    --- PASS: TestPythonEmitterExpressions/(a,_b) (0.00s)
+    --- PASS: TestPythonEmitterExpressions/f(1,_2) (0.00s)
+    --- PASS: TestPythonEmitterExpressions/object.field (0.00s)
+    --- PASS: TestPythonEmitterExpressions/object.field_=_2 (0.00s)
+    --- PASS: TestPythonEmitterExpressions/this (0.00s)
+    --- PASS: TestPythonEmitterExpressions/super.method (0.00s)
+=== RUN   TestPythonEmitterUsesLoxLazyHelpers
+--- PASS: TestPythonEmitterUsesLoxLazyHelpers (0.00s)
+=== RUN   TestPythonEmitterStatementsAndClosures
+--- PASS: TestPythonEmitterStatementsAndClosures (0.18s)
+=== RUN   TestPythonEmitterPreservesBlockScopeAndControlFlow
+--- PASS: TestPythonEmitterPreservesBlockScopeAndControlFlow (0.14s)
+=== RUN   TestPythonEmitterUsesResolvedGlobalBindings
+--- PASS: TestPythonEmitterUsesResolvedGlobalBindings (0.16s)
+=== RUN   TestPythonEmitterClassesAndInheritance
+--- PASS: TestPythonEmitterClassesAndInheritance (0.30s)
+=== RUN   TestPythonEmitterClassesMatchInterpreterExamples
+=== RUN   TestPythonEmitterClassesMatchInterpreterExamples/bound_methods_and_inherited_initializer
+=== RUN   TestPythonEmitterClassesMatchInterpreterExamples/super_and_overridden_method
+--- PASS: TestPythonEmitterClassesMatchInterpreterExamples (0.29s)
+    --- PASS: TestPythonEmitterClassesMatchInterpreterExamples/bound_methods_and_inherited_initializer (0.15s)
+    --- PASS: TestPythonEmitterClassesMatchInterpreterExamples/super_and_overridden_method (0.14s)
+=== RUN   TestTranspilationPreservesLoxExpressionSemantics
+=== RUN   TestTranspilationPreservesLoxExpressionSemantics/truthiness_and_lazy_operators
+=== RUN   TestTranspilationPreservesLoxExpressionSemantics/assignment_and_comma_evaluation
+=== RUN   TestTranspilationPreservesLoxExpressionSemantics/strict_equality_and_number_formatting
+--- PASS: TestTranspilationPreservesLoxExpressionSemantics (0.84s)
+    --- PASS: TestTranspilationPreservesLoxExpressionSemantics/truthiness_and_lazy_operators (0.27s)
+    --- PASS: TestTranspilationPreservesLoxExpressionSemantics/assignment_and_comma_evaluation (0.27s)
+    --- PASS: TestTranspilationPreservesLoxExpressionSemantics/strict_equality_and_number_formatting (0.30s)
+=== RUN   TestTranspiledProgramsMatchBundledExamples
+=== RUN   TestTranspiledProgramsMatchBundledExamples/basics.lox
+=== RUN   TestTranspiledProgramsMatchBundledExamples/classes.lox
+=== RUN   TestTranspiledProgramsMatchBundledExamples/closures.lox
+=== RUN   TestTranspiledProgramsMatchBundledExamples/expressions.lox
+=== RUN   TestTranspiledProgramsMatchBundledExamples/functions.lox
+=== RUN   TestTranspiledProgramsMatchBundledExamples/loops.lox
+=== RUN   TestTranspiledProgramsMatchBundledExamples/scopes.lox
+--- PASS: TestTranspiledProgramsMatchBundledExamples (2.01s)
+    --- PASS: TestTranspiledProgramsMatchBundledExamples/basics.lox (0.27s)
+    --- PASS: TestTranspiledProgramsMatchBundledExamples/classes.lox (0.27s)
+    --- PASS: TestTranspiledProgramsMatchBundledExamples/closures.lox (0.27s)
+    --- PASS: TestTranspiledProgramsMatchBundledExamples/expressions.lox (0.27s)
+    --- PASS: TestTranspiledProgramsMatchBundledExamples/functions.lox (0.30s)
+    --- PASS: TestTranspiledProgramsMatchBundledExamples/loops.lox (0.33s)
+    --- PASS: TestTranspiledProgramsMatchBundledExamples/scopes.lox (0.29s)
+=== RUN   TestPythonValueRuntimeIncludesLoxSemanticHelpers
+--- PASS: TestPythonValueRuntimeIncludesLoxSemanticHelpers (0.00s)
+=== RUN   TestResolverUsesLexicalBindingForClosures
+--- PASS: TestResolverUsesLexicalBindingForClosures (0.00s)
+=== RUN   TestResolverRejectsLocalReadInOwnInitializer
+--- PASS: TestResolverRejectsLocalReadInOwnInitializer (0.00s)
+=== RUN   TestResolverRejectsDuplicateLocalDeclarations
+--- PASS: TestResolverRejectsDuplicateLocalDeclarations (0.00s)
+=== RUN   TestResolverRejectsTopLevelReturn
+--- PASS: TestResolverRejectsTopLevelReturn (0.00s)
+=== RUN   TestResolverRejectsThisOutsideClass
+--- PASS: TestResolverRejectsThisOutsideClass (0.00s)
+=== RUN   TestResolverRejectsValueReturnFromInitializer
+--- PASS: TestResolverRejectsValueReturnFromInitializer (0.00s)
+=== RUN   TestResolverRejectsInvalidSuperUses
+=== RUN   TestResolverRejectsInvalidSuperUses/outside_class
+=== RUN   TestResolverRejectsInvalidSuperUses/class_without_superclass
+=== RUN   TestResolverRejectsInvalidSuperUses/self_inheritance
+--- PASS: TestResolverRejectsInvalidSuperUses (0.00s)
+    --- PASS: TestResolverRejectsInvalidSuperUses/outside_class (0.00s)
+    --- PASS: TestResolverRejectsInvalidSuperUses/class_without_superclass (0.00s)
+    --- PASS: TestResolverRejectsInvalidSuperUses/self_inheritance (0.00s)
+=== RUN   TestRunSourceDoesNotExecuteAfterResolverError
+--- PASS: TestRunSourceDoesNotExecuteAfterResolverError (0.00s)
+=== RUN   TestScannerSingleCharacterTokens
+--- PASS: TestScannerSingleCharacterTokens (0.00s)
+=== RUN   TestScannerCompoundOperators
+--- PASS: TestScannerCompoundOperators (0.00s)
+=== RUN   TestScannerConditionalTokens
+--- PASS: TestScannerConditionalTokens (0.00s)
+=== RUN   TestScannerWhitespaceCommentsAndLines
+--- PASS: TestScannerWhitespaceCommentsAndLines (0.00s)
+=== RUN   TestScannerBlockComments
+=== RUN   TestScannerBlockComments/same_line
+=== RUN   TestScannerBlockComments/multiline
+=== RUN   TestScannerBlockComments/empty
+--- PASS: TestScannerBlockComments (0.00s)
+    --- PASS: TestScannerBlockComments/same_line (0.00s)
+    --- PASS: TestScannerBlockComments/multiline (0.00s)
+    --- PASS: TestScannerBlockComments/empty (0.00s)
+=== RUN   TestScannerUnterminatedBlockComment
+--- PASS: TestScannerUnterminatedBlockComment (0.00s)
+=== RUN   TestScannerKeywords
+--- PASS: TestScannerKeywords (0.00s)
+=== RUN   TestScannerIdentifiersAndKeywordPrefixes
+--- PASS: TestScannerIdentifiersAndKeywordPrefixes (0.00s)
+=== RUN   TestScannerStrings
+--- PASS: TestScannerStrings (0.00s)
+=== RUN   TestScannerNumbers
+--- PASS: TestScannerNumbers (0.00s)
+=== RUN   TestScannerNumberFractionRequiresDigits
+--- PASS: TestScannerNumberFractionRequiresDigits (0.00s)
+=== RUN   TestScannerUnterminatedStringTracksLines
+--- PASS: TestScannerUnterminatedStringTracksLines (0.00s)
+=== RUN   TestScannerEmptySource
+--- PASS: TestScannerEmptySource (0.00s)
+=== RUN   TestScannerReportsInvalidSource
+=== RUN   TestScannerReportsInvalidSource/@
+=== RUN   TestScannerReportsInvalidSource/"unterminated
+=== RUN   TestScannerReportsInvalidSource//*_unterminated
+--- PASS: TestScannerReportsInvalidSource (0.00s)
+    --- PASS: TestScannerReportsInvalidSource/@ (0.00s)
+    --- PASS: TestScannerReportsInvalidSource/"unterminated (0.00s)
+    --- PASS: TestScannerReportsInvalidSource//*_unterminated (0.00s)
+=== RUN   TestScannerMixedSource
+--- PASS: TestScannerMixedSource (0.00s)
+=== RUN   TestParserBuildsStatements
+--- PASS: TestParserBuildsStatements (0.00s)
+=== RUN   TestParserAcceptsEmptyProgram
+--- PASS: TestParserAcceptsEmptyProgram (0.00s)
+=== RUN   TestParserSynchronizesAfterStatementError
+--- PASS: TestParserSynchronizesAfterStatementError (0.00s)
+=== RUN   TestParserSynchronizesPastStrayClosingBrace
+--- PASS: TestParserSynchronizesPastStrayClosingBrace (0.00s)
+=== RUN   TestParserAcceptsUninitializedVariable
+--- PASS: TestParserAcceptsUninitializedVariable (0.00s)
+=== RUN   TestInterpreterExecutesStatements
+--- PASS: TestInterpreterExecutesStatements (0.00s)
+=== RUN   TestInterpreterStopsAfterStatementRuntimeError
+--- PASS: TestInterpreterStopsAfterStatementRuntimeError (0.00s)
+=== RUN   TestInterpreterExecutesGlobalVariables
+--- PASS: TestInterpreterExecutesGlobalVariables (0.00s)
+=== RUN   TestInterpreterGlobalsPersistAcrossInterpretCalls
+--- PASS: TestInterpreterGlobalsPersistAcrossInterpretCalls (0.00s)
+=== RUN   TestInterpreterAllowsGlobalRedefinition
+--- PASS: TestInterpreterAllowsGlobalRedefinition (0.00s)
+=== RUN   TestInterpreterAssignsGlobalVariables
+--- PASS: TestInterpreterAssignsGlobalVariables (0.00s)
+=== RUN   TestInterpreterAssignsRightAssociatively
+--- PASS: TestInterpreterAssignsRightAssociatively (0.00s)
+=== RUN   TestInterpreterRejectsUndefinedAssignment
+--- PASS: TestInterpreterRejectsUndefinedAssignment (0.00s)
+=== RUN   TestParserBuildsBlockStatements
+--- PASS: TestParserBuildsBlockStatements (0.00s)
+=== RUN   TestInterpreterScopesBlockVariables
+--- PASS: TestInterpreterScopesBlockVariables (0.00s)
+=== RUN   TestInterpreterDoesNotExposeBlockVariables
+--- PASS: TestInterpreterDoesNotExposeBlockVariables (0.00s)
+=== RUN   TestInterpreterSupportsShadowingAndEnclosingLookup
+--- PASS: TestInterpreterSupportsShadowingAndEnclosingLookup (0.00s)
+=== RUN   TestInterpreterAssignsNearestEnclosingVariable
+--- PASS: TestInterpreterAssignsNearestEnclosingVariable (0.00s)
+=== RUN   TestInterpreterRestoresEnvironmentAfterBlockError
+--- PASS: TestInterpreterRestoresEnvironmentAfterBlockError (0.00s)
+=== RUN   TestParserBuildsIfStatement
+--- PASS: TestParserBuildsIfStatement (0.00s)
+=== RUN   TestInterpreterExecutesSelectedIfBranch
+=== RUN   TestInterpreterExecutesSelectedIfBranch/then
+=== RUN   TestInterpreterExecutesSelectedIfBranch/else
+=== RUN   TestInterpreterExecutesSelectedIfBranch/nil_is_falsey
+=== RUN   TestInterpreterExecutesSelectedIfBranch/number_is_truthy
+--- PASS: TestInterpreterExecutesSelectedIfBranch (0.00s)
+    --- PASS: TestInterpreterExecutesSelectedIfBranch/then (0.00s)
+    --- PASS: TestInterpreterExecutesSelectedIfBranch/else (0.00s)
+    --- PASS: TestInterpreterExecutesSelectedIfBranch/nil_is_falsey (0.00s)
+    --- PASS: TestInterpreterExecutesSelectedIfBranch/number_is_truthy (0.00s)
+=== RUN   TestInterpreterIfSupportsBlockBranches
+--- PASS: TestInterpreterIfSupportsBlockBranches (0.00s)
+=== RUN   TestParserBindsElseToNearestIf
+--- PASS: TestParserBindsElseToNearestIf (0.00s)
+=== RUN   TestInterpreterSkipsUnselectedIfBranch
+--- PASS: TestInterpreterSkipsUnselectedIfBranch (0.00s)
+=== RUN   TestParserReportsIfSyntaxErrors
+=== RUN   TestParserReportsIfSyntaxErrors/missing_opening_parenthesis
+=== RUN   TestParserReportsIfSyntaxErrors/missing_closing_parenthesis
+--- PASS: TestParserReportsIfSyntaxErrors (0.00s)
+    --- PASS: TestParserReportsIfSyntaxErrors/missing_opening_parenthesis (0.00s)
+    --- PASS: TestParserReportsIfSyntaxErrors/missing_closing_parenthesis (0.00s)
+=== RUN   TestParserBuildsWhileStatement
+--- PASS: TestParserBuildsWhileStatement (0.00s)
+=== RUN   TestInterpreterExecutesWhileLoop
+--- PASS: TestInterpreterExecutesWhileLoop (0.00s)
+=== RUN   TestInterpreterSkipsFalseyWhileLoop
+--- PASS: TestInterpreterSkipsFalseyWhileLoop (0.00s)
+=== RUN   TestInterpreterWhileSupportsNestedControlFlow
+--- PASS: TestInterpreterWhileSupportsNestedControlFlow (0.00s)
+=== RUN   TestInterpreterStopsWhileLoopOnRuntimeError
+--- PASS: TestInterpreterStopsWhileLoopOnRuntimeError (0.00s)
+=== RUN   TestParserReportsWhileSyntaxErrors
+=== RUN   TestParserReportsWhileSyntaxErrors/missing_opening_parenthesis
+=== RUN   TestParserReportsWhileSyntaxErrors/missing_closing_parenthesis
+--- PASS: TestParserReportsWhileSyntaxErrors (0.00s)
+    --- PASS: TestParserReportsWhileSyntaxErrors/missing_opening_parenthesis (0.00s)
+    --- PASS: TestParserReportsWhileSyntaxErrors/missing_closing_parenthesis (0.00s)
+=== RUN   TestParserDesugarsForLoop
+--- PASS: TestParserDesugarsForLoop (0.00s)
+=== RUN   TestInterpreterExecutesForLoop
+--- PASS: TestInterpreterExecutesForLoop (0.00s)
+=== RUN   TestInterpreterForLoopSupportsOmittedClauses
+--- PASS: TestInterpreterForLoopSupportsOmittedClauses (0.00s)
+=== RUN   TestInterpreterForLoopInitializerIsScoped
+--- PASS: TestInterpreterForLoopInitializerIsScoped (0.00s)
+=== RUN   TestParserReportsForSyntaxErrors
+=== RUN   TestParserReportsForSyntaxErrors/missing_opening_parenthesis
+=== RUN   TestParserReportsForSyntaxErrors/missing_condition_semicolon
+=== RUN   TestParserReportsForSyntaxErrors/missing_closing_parenthesis
+--- PASS: TestParserReportsForSyntaxErrors (0.00s)
+    --- PASS: TestParserReportsForSyntaxErrors/missing_opening_parenthesis (0.00s)
+    --- PASS: TestParserReportsForSyntaxErrors/missing_condition_semicolon (0.00s)
+    --- PASS: TestParserReportsForSyntaxErrors/missing_closing_parenthesis (0.00s)
+=== RUN   TestInterpreterReportsUndefinedGlobal
+--- PASS: TestInterpreterReportsUndefinedGlobal (0.00s)
+=== RUN   TestParseTranspileArgs
+=== RUN   TestParseTranspileArgs/default_output
+=== RUN   TestParseTranspileArgs/explicit_output
+=== RUN   TestParseTranspileArgs/missing_input
+=== RUN   TestParseTranspileArgs/missing_output
+=== RUN   TestParseTranspileArgs/unknown_option
+=== RUN   TestParseTranspileArgs/extra_arguments
+--- PASS: TestParseTranspileArgs (0.00s)
+    --- PASS: TestParseTranspileArgs/default_output (0.00s)
+    --- PASS: TestParseTranspileArgs/explicit_output (0.00s)
+    --- PASS: TestParseTranspileArgs/missing_input (0.00s)
+    --- PASS: TestParseTranspileArgs/missing_output (0.00s)
+    --- PASS: TestParseTranspileArgs/unknown_option (0.00s)
+    --- PASS: TestParseTranspileArgs/extra_arguments (0.00s)
+=== RUN   TestDefaultPythonOutputPath
+--- PASS: TestDefaultPythonOutputPath (0.00s)
+=== RUN   TestRunTranspileFileWritesDefaultAndExplicitOutputs
+--- PASS: TestRunTranspileFileWritesDefaultAndExplicitOutputs (0.30s)
+=== RUN   TestRunTranspileFileErrors
+Error reading file: open missing-transpile-input.lox: The system cannot find the file specified.
+[line 1] Error at ';': Expect expression.
+Error writing Python output: open C:\Users\ryjoe\AppData\Local\Temp\TestRunTranspileFileErrors2367521089\001\missing\out.py: The system cannot find the path specified.
+--- PASS: TestRunTranspileFileErrors (0.01s)
+PASS
+ok  	pylox	5.401s

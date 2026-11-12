@@ -42,11 +42,14 @@ Python files include their Lox compatibility helpers. This may make output Pytho
 
 ## Test
 
-The automated tests for this project use the built in Go test suite. Needs Go 1.27.1+ and Python 3.10+.
+I verified that all tests pass, and the full output is available to view in ```ALL_TEST_OUTPUTS_HERE.txt```. Running the Go test suite also yielded ```ok      pylox   6.427s  coverage: 86.4% of statements``` showing that the test cases are thorough and pass.
+
+The useful commands to test the project are below.
 
 ```powershell
-go test ./...
-go vet ./...
+go test . -v > ALL_TEST_OUTPUT_HERE.txt
+go vet .
+go test . --cover
 ```
 
 The tests syntax-check and execute generated Python, then compare its output
