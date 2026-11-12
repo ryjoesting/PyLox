@@ -39,7 +39,7 @@ Each stage is intended to be a separate commit.
 - **Complete when:** focused tests verify emitted helper source and generated
   source remains valid Python syntax; generated programs do not need to be run.
 
-### 3. Transpile expressions (in progress)
+### 3. Transpile expressions (complete)
 
 - Implement an AST-based emitter for every expression node.
 - Preserve precedence, associativity, evaluation order, short-circuiting, and
@@ -47,7 +47,7 @@ Each stage is intended to be a separate commit.
 - **Complete when:** focused golden tests cover each expression form and
   generated Python passes syntax validation.
 
-### 4. Transpile statements, scopes, and functions
+### 4. Transpile statements, scopes, and functions (in progress)
 
 - Emit declarations, blocks, conditionals, loops, print statements, functions,
   and returns.

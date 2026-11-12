@@ -7,7 +7,9 @@ import (
 )
 
 type pythonEmitter struct {
-	nextFunction int
+	builder         strings.Builder
+	nextFunction    int
+	nextEnvironment int
 }
 
 func (emitter *pythonEmitter) expression(expression Expr, environment string) (string, error) {
@@ -127,4 +129,139 @@ func (emitter *pythonEmitter) expression(expression Expr, environment string) (s
 	default:
 		return "", fmt.Errorf("unsupported Lox expression %T", expression)
 	}
+}
+
+func transpileSource(source string) (string, error) {
+	program, err := compileSource(source)
+	if err != nil {
+		return "", err
+	}
+	return emitPython(program)
+}
+
+func emitPython(program *compiledProgram) (string, error) {
+	emitter := &pythonEmitter{}
+	emitter.builder.WriteString(pythonValueRuntime)
+	emitter.builder.WriteString(pythonEnvironmentRuntime)
+	emitter.builder.WriteString("\n\n__lox_globals = __LoxEnv()\n")
+	if err := emitter.emitStatements(program.statements, "__lox_globals", 0); err != nil {
+		return "", err
+	}
+	return emitter.builder.String(), nil
+}
+
+func (emitter *pythonEmitter) emitStatements(statements []Stmt, environment string, indent int) error {
+	if len(statements) == 0 {
+		emitter.writeLine(indent, "pass")
+		return nil
+	}
+	for _, statement := range statements {
+		if err := emitter.emitStatement(statement, environment, indent); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (emitter *pythonEmitter) emitStatement(statement Stmt, environment string, indent int) error {
+	switch statement := statement.(type) {
+	case *BlockStmt:
+		emitter.nextEnvironment++
+		child := fmt.Sprintf("__lox_env_%d", emitter.nextEnvironment)
+		emitter.writeLine(indent, child+" = __LoxEnv("+environment+")")
+		return emitter.emitStatements(statement.Statements, child, indent)
+	case *ClassStmt:
+		return fmt.Errorf("class transpilation is not implemented")
+	case *ExpressionStmt:
+		expression, err := emitter.expression(statement.Expression, environment)
+		if err != nil {
+			return err
+		}
+		emitter.writeLine(indent, "_ = "+expression)
+	case *FunctionStmt:
+		name, err := emitter.emitFunction(statement, environment, indent)
+		if err != nil {
+			return err
+		}
+		emitter.writeLine(indent, fmt.Sprintf("%s.define(%s, __LoxFunction(%s, %s, %s, %d))",
+			environment, strconv.Quote(statement.Name.Lexeme), name, environment,
+			strconv.Quote(statement.Name.Lexeme), len(statement.Parameters)))
+	case *IfStmt:
+		condition, err := emitter.expression(statement.Condition, environment)
+		if err != nil {
+			return err
+		}
+		emitter.writeLine(indent, "if __lox_truthy("+condition+"):")
+		if err := emitter.emitStatement(statement.ThenBranch, environment, indent+1); err != nil {
+			return err
+		}
+		if statement.ElseBranch != nil {
+			emitter.writeLine(indent, "else:")
+			if err := emitter.emitStatement(statement.ElseBranch, environment, indent+1); err != nil {
+				return err
+			}
+		}
+	case *PrintStmt:
+		expression, err := emitter.expression(statement.Expression, environment)
+		if err != nil {
+			return err
+		}
+		emitter.writeLine(indent, "__lox_print("+expression+")")
+	case *ReturnStmt:
+		if statement.Value == nil {
+			emitter.writeLine(indent, "return None")
+		} else {
+			expression, err := emitter.expression(statement.Value, environment)
+			if err != nil {
+				return err
+			}
+			emitter.writeLine(indent, "return "+expression)
+		}
+	case *VarStmt:
+		value := "None"
+		if statement.Initializer != nil {
+			var err error
+			value, err = emitter.expression(statement.Initializer, environment)
+			if err != nil {
+				return err
+			}
+		}
+		emitter.writeLine(indent, fmt.Sprintf("%s.define(%s, %s)", environment,
+			strconv.Quote(statement.Name.Lexeme), value))
+	case *WhileStmt:
+		condition, err := emitter.expression(statement.Condition, environment)
+		if err != nil {
+			return err
+		}
+		emitter.writeLine(indent, "while __lox_truthy("+condition+"):")
+		if err := emitter.emitStatement(statement.Body, environment, indent+1); err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("unsupported Lox statement %T", statement)
+	}
+	return nil
+}
+
+func (emitter *pythonEmitter) emitFunction(function *FunctionStmt, closure string, indent int) (string, error) {
+	emitter.nextFunction++
+	name := fmt.Sprintf("__lox_function_%d", emitter.nextFunction)
+	local := "__lox_local"
+	arguments := "__lox_arguments"
+	emitter.writeLine(indent, fmt.Sprintf("def %s(%s, %s):", name, local, arguments))
+	bodyIndent := indent + 1
+	for index, parameter := range function.Parameters {
+		emitter.writeLine(bodyIndent, fmt.Sprintf("%s.define(%s, %s[%d])",
+			local, strconv.Quote(parameter.Lexeme), arguments, index))
+	}
+	if err := emitter.emitStatements(function.Body, local, bodyIndent); err != nil {
+		return "", err
+	}
+	return name, nil
+}
+
+func (emitter *pythonEmitter) writeLine(indent int, line string) {
+	emitter.builder.WriteString(strings.Repeat("    ", indent))
+	emitter.builder.WriteString(line)
+	emitter.builder.WriteByte('\n')
 }

@@ -96,3 +96,56 @@ def __lox_unary(operator, value):
         return -__lox_number(value, operator)
     raise RuntimeError("Unsupported unary operator: " + operator)
 `
+
+const pythonEnvironmentRuntime = `
+
+class __LoxEnv:
+    def __init__(self, enclosing=None):
+        self.enclosing = enclosing
+        self.values = {}
+
+    def define(self, name, value):
+        self.values[name] = value
+        return value
+
+    def get(self, name):
+        if name in self.values:
+            return self.values[name]
+        if self.enclosing is not None:
+            return self.enclosing.get(name)
+        raise RuntimeError("Undefined variable '" + name + "'.")
+
+    def assign(self, name, value):
+        if name in self.values:
+            self.values[name] = value
+            return value
+        if self.enclosing is not None:
+            return self.enclosing.assign(name, value)
+        raise RuntimeError("Undefined variable '" + name + "'.")
+
+
+class __LoxFunction:
+    def __init__(self, implementation, closure, name, arity):
+        self.implementation = implementation
+        self.closure = closure
+        self.name = name
+        self.arity = arity
+
+    def call(self, arguments):
+        if len(arguments) != self.arity:
+            raise RuntimeError("Expected " + str(self.arity) + " arguments but got " + str(len(arguments)) + ".")
+        return self.implementation(__LoxEnv(self.closure), arguments)
+
+    def __str__(self):
+        return "<fn " + self.name + ">"
+
+
+def __lox_call(callee, arguments):
+    if not isinstance(callee, __LoxFunction):
+        raise RuntimeError("Can only call functions and classes.")
+    return callee.call(arguments)
+
+
+def __lox_print(value):
+    print(__lox_string(value))
+`
