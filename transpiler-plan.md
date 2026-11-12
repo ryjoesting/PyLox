@@ -47,7 +47,7 @@ Each stage is intended to be a separate commit.
 - **Complete when:** focused golden tests cover each expression form and
   generated Python passes syntax validation.
 
-### 4. Transpile statements, scopes, and functions (in progress)
+### 4. Transpile statements, scopes, and functions (complete)
 
 - Emit declarations, blocks, conditionals, loops, print statements, functions,
   and returns.
@@ -57,7 +57,7 @@ Each stage is intended to be a separate commit.
 - **Complete when:** golden tests cover nested scopes, closures, recursion, and
   control flow, and output passes syntax validation.
 
-### 5. Transpile classes and inheritance
+### 5. Transpile classes and inheritance (in progress)
 
 - Emit classes, initializers, methods, `this`, `super`, inheritance, and
   dynamic fields.

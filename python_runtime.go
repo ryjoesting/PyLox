@@ -31,6 +31,10 @@ def __lox_string(value):
     if value is False:
         return "false"
     if type(value) is float:
+        if __lox_math.isnan(value):
+            return "NaN"
+        if __lox_math.isinf(value):
+            return "+Inf" if value > 0 else "-Inf"
         text = format(__lox_Decimal(repr(value)), "f")
         if "." in text:
             text = text.rstrip("0").rstrip(".")
@@ -99,7 +103,7 @@ def __lox_unary(operator, value):
 
 const pythonEnvironmentRuntime = `
 
-class __LoxEnv:
+class _LoxEnv:
     def __init__(self, enclosing=None):
         self.enclosing = enclosing
         self.values = {}
@@ -124,28 +128,113 @@ class __LoxEnv:
         raise RuntimeError("Undefined variable '" + name + "'.")
 
 
-class __LoxFunction:
-    def __init__(self, implementation, closure, name, arity):
+class _LoxFunction:
+    def __init__(self, implementation, closure, name, arity, initializer=False):
         self.implementation = implementation
         self.closure = closure
         self.name = name
         self.arity = arity
+        self.initializer = initializer
 
     def call(self, arguments):
         if len(arguments) != self.arity:
             raise RuntimeError("Expected " + str(self.arity) + " arguments but got " + str(len(arguments)) + ".")
-        return self.implementation(__LoxEnv(self.closure), arguments)
+        result = self.implementation(_LoxEnv(self.closure), arguments)
+        if self.initializer:
+            return self.closure.get("this")
+        return result
 
     def __str__(self):
         return "<fn " + self.name + ">"
 
+    def bind(self, instance):
+        closure = _LoxEnv(self.closure)
+        closure.define("this", instance)
+        return _LoxFunction(self.implementation, closure, self.name, self.arity, self.initializer)
+
+
+class _LoxClass:
+    def __init__(self, name, superclass, methods):
+        self.name = name
+        self.superclass = superclass
+        self.methods = methods
+
+    def find_method(self, name):
+        if name in self.methods:
+            return self.methods[name]
+        if self.superclass is not None:
+            return self.superclass.find_method(name)
+        return None
+
+    def arity(self):
+        initializer = self.find_method("init")
+        return 0 if initializer is None else initializer.arity
+
+    def call(self, arguments):
+        expected = self.arity()
+        if len(arguments) != expected:
+            raise RuntimeError("Expected " + str(expected) + " arguments but got " + str(len(arguments)) + ".")
+        instance = _LoxInstance(self)
+        initializer = self.find_method("init")
+        if initializer is not None:
+            initializer.bind(instance).call(arguments)
+        return instance
+
+    def __str__(self):
+        return self.name
+
+
+class _LoxInstance:
+    def __init__(self, klass):
+        self.klass = klass
+        self.fields = {}
+
+    def get(self, name):
+        if name in self.fields:
+            return self.fields[name]
+        method = self.klass.find_method(name)
+        if method is not None:
+            return method.bind(self)
+        raise RuntimeError("Undefined property '" + name + "'.")
+
+    def set(self, name, value):
+        self.fields[name] = value
+        return value
+
+    def __str__(self):
+        return self.klass.name + " instance"
+
 
 def __lox_call(callee, arguments):
-    if not isinstance(callee, __LoxFunction):
-        raise RuntimeError("Can only call functions and classes.")
-    return callee.call(arguments)
+    if isinstance(callee, (_LoxFunction, _LoxClass)):
+        return callee.call(arguments)
+    raise RuntimeError("Can only call functions and classes.")
+
+
+def __lox_get(object, name):
+    if not isinstance(object, _LoxInstance):
+        raise RuntimeError("Only instances have properties.")
+    return object.get(name)
+
+
+def __lox_set(object, name, value):
+    if not isinstance(object, _LoxInstance):
+        raise RuntimeError("Only instances have fields.")
+    return object.set(name, value)
+
+
+def __lox_super(environment, name):
+    superclass = environment.get("super")
+    if not isinstance(superclass, _LoxClass):
+        raise RuntimeError("Superclass must be a class.")
+    instance = environment.get("this")
+    method = superclass.find_method(name)
+    if method is None:
+        raise RuntimeError("Undefined property '" + name + "'.")
+    return method.bind(instance)
 
 
 def __lox_print(value):
     print(__lox_string(value))
+
 `

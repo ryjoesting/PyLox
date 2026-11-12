@@ -19,6 +19,21 @@ func assertPythonSyntax(t *testing.T, source string) {
 	}
 }
 
+func runGeneratedPython(t *testing.T, source string) string {
+	t.Helper()
+	python, err := exec.LookPath("python")
+	if err != nil {
+		t.Skip("Python is unavailable for generated-source execution")
+	}
+	command := exec.Command(python, "-c", "import sys; exec(compile(sys.stdin.read(), '<transpiled>', 'exec'))")
+	command.Stdin = strings.NewReader(source)
+	output, err := command.CombinedOutput()
+	if err != nil {
+		t.Fatalf("generated Python failed: %v\n%s", err, output)
+	}
+	return strings.ReplaceAll(string(output), "\r\n", "\n")
+}
+
 func TestPythonEmitterExpressions(t *testing.T) {
 	tests := []struct {
 		source string
@@ -82,8 +97,8 @@ func TestPythonEmitterStatementsAndClosures(t *testing.T) {
 	}
 
 	for _, expected := range []string{
-		"class __LoxEnv:",
-		"class __LoxFunction:",
+		"class _LoxEnv:",
+		"class _LoxFunction:",
 		"def __lox_function_1(__lox_local, __lox_arguments):",
 		"def __lox_function_2(__lox_local, __lox_arguments):",
 		`__lox_local.define("count", 0.0)`,
@@ -111,7 +126,7 @@ func TestPythonEmitterPreservesBlockScopeAndControlFlow(t *testing.T) {
 	}
 	for _, expected := range []string{
 		"while __lox_truthy(__lox_binary(\"<\", __lox_globals.get(\"i\"), 2.0)):",
-		"__lox_env_1 = __LoxEnv(__lox_globals)",
+		"__lox_env_1 = _LoxEnv(__lox_globals)",
 		"if __lox_truthy(__lox_binary(\"==\", __lox_env_1.get(\"i\"), 0.0)):",
 		"else:",
 	} {
@@ -122,8 +137,96 @@ func TestPythonEmitterPreservesBlockScopeAndControlFlow(t *testing.T) {
 	assertPythonSyntax(t, source)
 }
 
-func TestPythonEmitterRejectsClassesUntilClassStage(t *testing.T) {
-	if _, err := transpileSource(`class A {}`); err == nil {
-		t.Fatal("transpileSource accepted a class before class emission is implemented")
+func TestPythonEmitterClassesAndInheritance(t *testing.T) {
+	source, err := transpileSource(`
+		class A {
+			init(value) { this.value = value; }
+			describe() { return "A:" + this.value; }
+		}
+		class B < A {
+			describe() { return super.describe() + ":B"; }
+		}
+		var instance = B("value");
+		var method = instance.describe;
+		instance.describe = "field";
+		print instance.describe;
+		print method();
+	`)
+	if err != nil {
+		t.Fatalf("transpile classes: %v", err)
+	}
+	assertPythonSyntax(t, source)
+	for _, expected := range []string{
+		"class _LoxClass:",
+		"class _LoxInstance:",
+		`__lox_superclass_1 = __lox_globals.get("A")`,
+		`__lox_env_2.define("super", __lox_superclass_1)`,
+		`__lox_globals.assign("A", _LoxClass("A", None,`,
+		`_LoxFunction(__lox_function_3, __lox_env_2, "describe", 0, False)`,
+		"__lox_super(__lox_local, \"describe\")",
+	} {
+		if !strings.Contains(source, expected) {
+			t.Errorf("generated Python does not contain %q", expected)
+		}
+	}
+	if got, want := runGeneratedPython(t, source), "field\nA:value:B\n"; got != want {
+		t.Fatalf("generated class output: got %q, want %q", got, want)
+	}
+}
+
+func TestPythonEmitterClassesMatchInterpreterExamples(t *testing.T) {
+	tests := []struct {
+		name   string
+		source string
+		want   string
+	}{
+		{
+			name: "bound methods and inherited initializer",
+			source: `
+				class A { init(value) { this.value = value; } method() { return this.value; } }
+				class B < A {}
+				var instance = B("inherited");
+				var method = instance.method;
+				print method();
+			`,
+			want: "inherited\n",
+		},
+		{
+			name: "super and overridden method",
+			source: `
+				class A { method() { print "A"; } }
+				class B < A { method() { super.method(); print "B"; } }
+				B().method();
+			`,
+			want: "A\nB\n",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			generated, err := transpileSource(test.source)
+			if err != nil {
+				t.Fatalf("transpile source: %v", err)
+			}
+			got := runGeneratedPython(t, generated)
+			if got != test.want {
+				t.Fatalf("generated output: got %q, want %q", got, test.want)
+			}
+
+			statements, err := parseSource(test.source)
+			if err != nil {
+				t.Fatalf("parse interpreter source: %v", err)
+			}
+			var interpreted strings.Builder
+			interpreter := NewInterpreter(&interpreted)
+			if err := NewResolver(interpreter).Resolve(statements); err != nil {
+				t.Fatalf("resolve interpreter source: %v", err)
+			}
+			if err := interpreter.Interpret(statements); err != nil {
+				t.Fatalf("interpret source: %v", err)
+			}
+			if got := interpreted.String(); got != test.want {
+				t.Fatalf("interpreter output: got %q, want %q", got, test.want)
+			}
+		})
 	}
 }

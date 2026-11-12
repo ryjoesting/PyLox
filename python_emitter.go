@@ -143,7 +143,7 @@ func emitPython(program *compiledProgram) (string, error) {
 	emitter := &pythonEmitter{}
 	emitter.builder.WriteString(pythonValueRuntime)
 	emitter.builder.WriteString(pythonEnvironmentRuntime)
-	emitter.builder.WriteString("\n\n__lox_globals = __LoxEnv()\n")
+	emitter.builder.WriteString("\n\n__lox_globals = _LoxEnv()\n")
 	if err := emitter.emitStatements(program.statements, "__lox_globals", 0); err != nil {
 		return "", err
 	}
@@ -168,10 +168,10 @@ func (emitter *pythonEmitter) emitStatement(statement Stmt, environment string, 
 	case *BlockStmt:
 		emitter.nextEnvironment++
 		child := fmt.Sprintf("__lox_env_%d", emitter.nextEnvironment)
-		emitter.writeLine(indent, child+" = __LoxEnv("+environment+")")
+		emitter.writeLine(indent, child+" = _LoxEnv("+environment+")")
 		return emitter.emitStatements(statement.Statements, child, indent)
 	case *ClassStmt:
-		return fmt.Errorf("class transpilation is not implemented")
+		return emitter.emitClass(statement, environment, indent)
 	case *ExpressionStmt:
 		expression, err := emitter.expression(statement.Expression, environment)
 		if err != nil {
@@ -179,11 +179,11 @@ func (emitter *pythonEmitter) emitStatement(statement Stmt, environment string, 
 		}
 		emitter.writeLine(indent, "_ = "+expression)
 	case *FunctionStmt:
-		name, err := emitter.emitFunction(statement, environment, indent)
+		name, err := emitter.emitFunction(statement, indent)
 		if err != nil {
 			return err
 		}
-		emitter.writeLine(indent, fmt.Sprintf("%s.define(%s, __LoxFunction(%s, %s, %s, %d))",
+		emitter.writeLine(indent, fmt.Sprintf("%s.define(%s, _LoxFunction(%s, %s, %s, %d))",
 			environment, strconv.Quote(statement.Name.Lexeme), name, environment,
 			strconv.Quote(statement.Name.Lexeme), len(statement.Parameters)))
 	case *IfStmt:
@@ -243,7 +243,7 @@ func (emitter *pythonEmitter) emitStatement(statement Stmt, environment string, 
 	return nil
 }
 
-func (emitter *pythonEmitter) emitFunction(function *FunctionStmt, closure string, indent int) (string, error) {
+func (emitter *pythonEmitter) emitFunction(function *FunctionStmt, indent int) (string, error) {
 	emitter.nextFunction++
 	name := fmt.Sprintf("__lox_function_%d", emitter.nextFunction)
 	local := "__lox_local"
@@ -258,6 +258,48 @@ func (emitter *pythonEmitter) emitFunction(function *FunctionStmt, closure strin
 		return "", err
 	}
 	return name, nil
+}
+
+func (emitter *pythonEmitter) emitClass(statement *ClassStmt, environment string, indent int) error {
+	className := statement.Name.Lexeme
+	quotedName := strconv.Quote(className)
+	emitter.writeLine(indent, fmt.Sprintf("%s.define(%s, None)", environment, quotedName))
+
+	superclass := "None"
+	methodClosure := environment
+	if statement.Superclass != nil {
+		superclassExpression, err := emitter.expression(statement.Superclass, environment)
+		if err != nil {
+			return err
+		}
+		emitter.nextEnvironment++
+		superclass = fmt.Sprintf("__lox_superclass_%d", emitter.nextEnvironment)
+		emitter.writeLine(indent, fmt.Sprintf("%s = %s", superclass, superclassExpression))
+		emitter.writeLine(indent, fmt.Sprintf("if not isinstance(%s, _LoxClass):", superclass))
+		emitter.writeLine(indent+1, `raise RuntimeError("Superclass must be a class.")`)
+		emitter.nextEnvironment++
+		methodClosure = fmt.Sprintf("__lox_env_%d", emitter.nextEnvironment)
+		emitter.writeLine(indent, fmt.Sprintf("%s = _LoxEnv(%s)", methodClosure, environment))
+		emitter.writeLine(indent, fmt.Sprintf("%s.define(\"super\", %s)", methodClosure, superclass))
+	}
+
+	methods := make([]string, 0, len(statement.Methods))
+	for _, method := range statement.Methods {
+		implementation, err := emitter.emitFunction(method, indent)
+		if err != nil {
+			return err
+		}
+		initializer := "False"
+		if method.Name.Lexeme == "init" {
+			initializer = "True"
+		}
+		methods = append(methods, fmt.Sprintf("%s: _LoxFunction(%s, %s, %s, %d, %s)",
+			strconv.Quote(method.Name.Lexeme), implementation, methodClosure,
+			strconv.Quote(method.Name.Lexeme), len(method.Parameters), initializer))
+	}
+	class := fmt.Sprintf("_LoxClass(%s, %s, {%s})", quotedName, superclass, strings.Join(methods, ", "))
+	emitter.writeLine(indent, fmt.Sprintf("%s.assign(%s, %s)", environment, quotedName, class))
+	return nil
 }
 
 func (emitter *pythonEmitter) writeLine(indent int, line string) {
