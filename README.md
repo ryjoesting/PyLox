@@ -56,6 +56,28 @@ go run . "lox_programs\closures.lox"
 go run . "lox_programs\classes.lox"
 ```
 
+## Transpile to Python
+
+Use the `transpile` command to write a standalone Python source file targeting
+Python 3.10 or later:
+
+```text
+go run . transpile "lox_programs\basics.lox"
+```
+
+By default, the generated file is written beside the Lox input with a `.py`
+extension (for example, `lox_programs\basics.py`). Choose another output path
+with `-o`:
+
+```text
+go run . transpile "lox_programs\classes.lox" -o "output\classes.py"
+```
+
+The generated source includes its Lox compatibility helpers and does not
+require an installed PyLox runtime package. Use `go run . run <script.lox>` to
+run a Lox file with the interpreter. For compatibility, `go run . <script.lox>`
+continues to run the interpreter, and `go run .` starts the REPL.
+
 The program parses and executes complete Lox statements. Expression statements
 must end with `;` and discard their result. Print statements display their
 evaluated value, for example `print 1 + 2;` prints `3`. Global variables can
@@ -414,7 +436,10 @@ go test -run TestInterpreter -v
 ## Current Implementation
 
 The project includes a scanner, expression and statement ASTs, a recursive
-descent parser, a resolver, and a tree-walk interpreter. The AST uses sealed
+descent parser, a resolver, a tree-walk interpreter, and a Python source
+transpiler. The transpiler consumes the resolved AST, emits standalone Python
+source, and preserves Lox lexical bindings and runtime behavior with generated
+compatibility helpers. The AST uses sealed
 `Expr` and `Stmt` interfaces with expression nodes for binary operations,
 calls, conditionals, comma expressions, assignments, property access, property
 assignment, `this`, `super`, grouping, literals, logical operators, unary
@@ -439,6 +464,10 @@ starters.
 ## Project Files
 
 - `golox.go` - Program entry point and command-line handling.
+- `compiler.go` - Shared scan, parse, and resolution pipeline.
+- `python_emitter.go` - Python source emitter for resolved Lox ASTs.
+- `python_runtime.go` - Embedded Lox-compatible runtime helpers for Python output.
+- `transpile_cli.go` - Transpilation command and output-file handling.
 - `scanner.go` - Token definitions, lexical scanner, REPL, and file execution.
 - `ast.go` - Expression AST nodes and the `ExprVisitor` interface.
 - `statement.go` - Statement AST nodes and the `StmtVisitor` interface.
@@ -453,6 +482,8 @@ starters.
 - `class.go` - Runtime classes, inheritance, instances, fields, methods, and bound methods.
 - `resolver.go` - Static lexical scope resolver and binding diagnostics.
 - `interpreter_test.go` - Expression evaluation, runtime error, and pipeline tests.
+- `python_emitter_test.go` - Transpiler output, Python syntax, and example-program tests.
+- `transpile_cli_test.go` - Transpiler CLI argument and file-output tests.
 - `resolver_test.go` - Lexical binding, closure, and resolver diagnostic tests.
 - `statement_test.go` - Statement parsing and execution tests.
 - `scanner_test.go` - Built-in Go tests for scanner behavior.

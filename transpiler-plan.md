@@ -51,9 +51,9 @@ Each stage is intended to be a separate commit.
 
 - Emit declarations, blocks, conditionals, loops, print statements, functions,
   and returns.
-- Use resolver binding information to preserve shadowing, recursion, and
-  closure structure; mangle identifiers that conflict with Python or generated
-  helper names.
+- Use resolver binding information and explicit Lox environments to preserve
+  shadowing, recursion, and closure structure without exposing Lox identifiers
+  as Python variable names.
 - **Complete when:** golden tests cover nested scopes, closures, recursion, and
   control flow, and output passes syntax validation.
 
@@ -65,7 +65,7 @@ Each stage is intended to be a separate commit.
 - **Complete when:** tests cover the repository's class and inheritance
   constructs and output passes syntax validation.
 
-### 6. Expose end-to-end transpilation (in progress)
+### 6. Expose end-to-end transpilation (complete)
 
 - Add the `transpile` CLI and `-o` output option, retaining the agreed run and
   REPL behavior.

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -45,6 +47,8 @@ func TestPythonEmitterExpressions(t *testing.T) {
 		{source: `"text"`, want: `"text"`},
 		{source: `a = 1`, want: `env.assign("a", 1.0)`},
 		{source: `1 + 2 * 3`, want: `__lox_binary("+", 1.0, __lox_binary("*", 2.0, 3.0))`},
+		{source: `! -1`, want: `__lox_unary("!", __lox_unary("-", 1.0))`},
+		{source: `1 != 2`, want: `__lox_binary("!=", 1.0, 2.0)`},
 		{source: `a and b`, want: `__lox_logic("and", lambda: (env.get("a")), lambda: (env.get("b")))`},
 		{source: `a or b`, want: `__lox_logic("or", lambda: (env.get("a")), lambda: (env.get("b")))`},
 		{source: `a ? b : c`, want: `__lox_conditional(env.get("a"), lambda: (env.get("b")), lambda: (env.get("c")))`},
@@ -52,6 +56,8 @@ func TestPythonEmitterExpressions(t *testing.T) {
 		{source: `f(1, 2)`, want: `__lox_call(env.get("f"), [1.0, 2.0])`},
 		{source: `object.field`, want: `__lox_get(env.get("object"), "field")`},
 		{source: `object.field = 2`, want: `__lox_set(env.get("object"), "field", 2.0)`},
+		{source: `this`, want: `env.get("this")`},
+		{source: `super.method`, want: `__lox_super(env, "method")`},
 	}
 
 	for _, test := range tests {
@@ -142,18 +148,27 @@ func TestPythonEmitterUsesResolvedGlobalBindings(t *testing.T) {
 		var value = "global";
 		{
 			fun readValue() { print value; }
+			fun updateValue() { value = "updated"; }
 			var value = "local";
 			readValue();
+			updateValue();
+			print value;
 		}
+		print value;
 	`
 	generated, err := transpileSource(source)
 	if err != nil {
 		t.Fatalf("transpile source: %v", err)
 	}
-	if !strings.Contains(generated, `__lox_globals.get("value")`) {
-		t.Fatal("function reference was not emitted as a resolved global lookup")
+	for _, expected := range []string{
+		`__lox_globals.get("value")`,
+		`__lox_globals.assign("value", "updated")`,
+	} {
+		if !strings.Contains(generated, expected) {
+			t.Errorf("generated source does not preserve resolved global binding %q", expected)
+		}
 	}
-	if got, want := runGeneratedPython(t, generated), "global\n"; got != want {
+	if got, want := runGeneratedPython(t, generated), "global\nlocal\nupdated\n"; got != want {
 		t.Fatalf("generated output: got %q, want %q", got, want)
 	}
 
@@ -169,7 +184,7 @@ func TestPythonEmitterUsesResolvedGlobalBindings(t *testing.T) {
 	if err := interpreter.Interpret(statements); err != nil {
 		t.Fatalf("interpret source: %v", err)
 	}
-	if got, want := output.String(), "global\n"; got != want {
+	if got, want := output.String(), "global\nlocal\nupdated\n"; got != want {
 		t.Fatalf("interpreter output: got %q, want %q", got, want)
 	}
 }
@@ -263,6 +278,46 @@ func TestPythonEmitterClassesMatchInterpreterExamples(t *testing.T) {
 			}
 			if got := interpreted.String(); got != test.want {
 				t.Fatalf("interpreter output: got %q, want %q", got, test.want)
+			}
+		})
+	}
+}
+
+func TestTranspiledProgramsMatchBundledExamples(t *testing.T) {
+	entries, err := os.ReadDir(filepath.Join("lox_programs"))
+	if err != nil {
+		t.Fatalf("read bundled examples: %v", err)
+	}
+	for _, entry := range entries {
+		if entry.IsDir() || filepath.Ext(entry.Name()) != ".lox" {
+			continue
+		}
+		t.Run(entry.Name(), func(t *testing.T) {
+			path := filepath.Join("lox_programs", entry.Name())
+			source, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatalf("read example: %v", err)
+			}
+			generated, err := transpileSource(string(source))
+			if err != nil {
+				t.Fatalf("transpile example: %v", err)
+			}
+			assertPythonSyntax(t, generated)
+
+			statements, err := parseSource(string(source))
+			if err != nil {
+				t.Fatalf("parse example for interpreter: %v", err)
+			}
+			var expected strings.Builder
+			interpreter := NewInterpreter(&expected)
+			if err := NewResolver(interpreter).Resolve(statements); err != nil {
+				t.Fatalf("resolve example: %v", err)
+			}
+			if err := interpreter.Interpret(statements); err != nil {
+				t.Fatalf("interpret example: %v", err)
+			}
+			if got := runGeneratedPython(t, generated); got != expected.String() {
+				t.Fatalf("generated output:\n got: %q\nwant: %q", got, expected.String())
 			}
 		})
 	}
