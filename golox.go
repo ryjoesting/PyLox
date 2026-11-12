@@ -36,5 +36,5 @@ func main() {
 }
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "Usage: golox [run <script> | transpile <input.lox> [-o <output.py>]]")
+	fmt.Fprintln(os.Stderr, "Usage: pylox [run <script> | transpile <input.lox> [-o <output.py>]]")
 }

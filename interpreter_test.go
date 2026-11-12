@@ -523,7 +523,7 @@ func TestRunFileStatusCodes(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			file, err := os.CreateTemp("", "golox-*.lox")
+			file, err := os.CreateTemp("", "pylox-*.lox")
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -1,3 +1,3 @@
-module golox
+module pylox
 
 go 1.27.1

@@ -1,63 +1,65 @@
 # PyLox
 
-PyLox transpiles Lox programs into standalone Python source files. The Go
-front end scans, parses, and resolves a Lox program before emitting Python
-3.10+ code with the helpers needed to preserve Lox semantics.
+PyLox transpiles Lox programs into standalone Python source files. It scans,
+parses, and resolves a Lox program before generating Python 3.10+ code with the
+helpers needed to preserve Lox semantics.
 
-## Requirements
+## Install
 
-- Go 1.27.1 or later
-- Python 3.10 or later for running generated files and the transpiler tests
-- No third-party Go dependencies
-
-## Transpile a program
-
-Run these commands from the repository root:
+From the repository root, install the `pylox` command:
 
 ```powershell
-go run . transpile "lox_programs\basics.lox"
-python "lox_programs\basics.py"
+go install .
 ```
 
-By default, the `.py` file is written beside the input with the same base
-name. Choose a different path with `-o`:
+On Windows, Go installs `pylox.exe` under `GOBIN` or, by default,
+`%USERPROFILE%\go\bin`. Make sure that directory is on `PATH`, then open a
+new terminal.
+
+## Use
+
+Transpile a Lox program:
 
 ```powershell
-go run . transpile "lox_programs\classes.lox" -o "output\classes.py"
-python "output\classes.py"
+pylox transpile "lox_programs\basics.lox"
 ```
 
-Generated files include their compatibility runtime and do not depend on an
-installed PyLox package. Python output files are ignored by Git under
-`lox_programs/` to keep generated artifacts out of the source tree.
-
-The CLI also retains the Go interpreter for comparison:
+The generated Python file is written beside the Lox input with the same base
+name. Specify another output path with `-o`:
 
 ```powershell
-go run . run "lox_programs\basics.lox"
+pylox transpile "lox_programs\classes.lox" -o "output\classes.py"
 ```
 
-The legacy `go run . <file.lox>` invocation still runs the interpreter, and
-`go run .` starts its REPL.
+Run a Lox program with the Go interpreter:
+
+```powershell
+pylox run "lox_programs\basics.lox"
+```
+
+Running `pylox` without arguments starts the interpreter REPL. Generated
+Python files include their Lox compatibility helpers and do not require a
+PyLox runtime package. Python files generated under `lox_programs/` are
+ignored by Git.
 
 ## Test
 
-Run the Go test suite and static analysis from the repository root:
+Requirements: Go 1.27.1+ and Python 3.10+.
 
 ```powershell
 go test ./...
 go vet ./...
 ```
 
-The transpiler tests use Python to syntax-check and execute generated output,
-then compare its output with the Go interpreter. They cover every `.lox`
-example in `lox_programs/` plus focused cases for expression semantics,
-lexical scopes, closures, functions, classes, inheritance, and CLI output.
+The tests syntax-check and execute generated Python, then compare its output
+with the Go interpreter. They cover each `.lox` example in `lox_programs/` and
+focused cases for expressions, lexical scope, closures, functions, classes,
+inheritance, and CLI output.
 
 ## Examples
 
-The [`lox_programs/`](./lox_programs/) directory contains small programs used
-by the test suite:
+The [`lox_programs/`](./lox_programs/) directory contains transpilation
+fixtures:
 
 - `basics.lox` — variables, arithmetic, logic, and conditionals
 - `expressions.lox` — truthiness, short-circuiting, conditionals, and comma
@@ -72,10 +74,9 @@ by the test suite:
 
 - `scanner.go`, `parser.go`, `ast.go`, and `statement.go` implement the Lox
   front end.
-- `resolver.go` records lexical bindings used by both the interpreter and
-  transpiler.
+- `resolver.go` records lexical bindings used by the transpiler.
 - `compiler.go` provides the shared scan/parse/resolve pipeline.
 - `python_emitter.go` and `python_runtime.go` generate standalone Python.
 - `transpile_cli.go` handles transpilation and output-file selection.
-- `interpreter.go`, `function.go`, and `class.go` retain the Go interpreter as
-  a compatibility command and a behavioral reference for tests.
+- `interpreter.go`, `function.go`, and `class.go` provide the `pylox run`
+  command and a behavioral reference for tests.
