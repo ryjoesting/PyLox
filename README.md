@@ -56,7 +56,13 @@ inheritance, and CLI output.
 
 ## How the Transpiler Works
 
-At a high-level, this transpiler works by (fill in)
+The scanner turns the Lox source into tokens, and the parser organizes those
+tokens into an abstract syntax tree. The resolver checks names and records
+which scope each variable belongs to, so generated code keeps Lox's rules for
+shadowing and closures. The Python emitter walks the resolved tree and writes
+equivalent Python code, adding helpers for Lox behavior that Python handles
+differently. Those helpers are included in the output, so each generated file
+can stand on its own.
 
 ## Examples
 
