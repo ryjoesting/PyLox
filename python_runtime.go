@@ -119,6 +119,18 @@ class _LoxEnv:
             return self.enclosing.get(name)
         raise RuntimeError("Undefined variable '" + name + "'.")
 
+    def ancestor(self, distance):
+        environment = self
+        for _ in range(distance):
+            environment = environment.enclosing
+        return environment
+
+    def get_at(self, distance, name):
+        environment = self.ancestor(distance)
+        if name not in environment.values:
+            raise RuntimeError("Undefined variable '" + name + "'.")
+        return environment.values[name]
+
     def assign(self, name, value):
         if name in self.values:
             self.values[name] = value
@@ -126,6 +138,13 @@ class _LoxEnv:
         if self.enclosing is not None:
             return self.enclosing.assign(name, value)
         raise RuntimeError("Undefined variable '" + name + "'.")
+
+    def assign_at(self, distance, name, value):
+        environment = self.ancestor(distance)
+        if name not in environment.values:
+            raise RuntimeError("Undefined variable '" + name + "'.")
+        environment.values[name] = value
+        return value
 
 
 class _LoxFunction:

@@ -102,7 +102,7 @@ func TestPythonEmitterStatementsAndClosures(t *testing.T) {
 		"def __lox_function_1(__lox_local, __lox_arguments):",
 		"def __lox_function_2(__lox_local, __lox_arguments):",
 		`__lox_local.define("count", 0.0)`,
-		`__lox_local.assign("count", __lox_binary("+", __lox_local.get("count"), 1.0))`,
+		`__lox_local.assign_at(1, "count", __lox_binary("+", __lox_local.get_at(1, "count"), 1.0))`,
 		`__lox_globals.define("counter", __lox_call(__lox_globals.get("makeCounter"), []))`,
 		"__lox_print(__lox_call(__lox_globals.get(\"counter\"), []))",
 	} {
@@ -127,7 +127,7 @@ func TestPythonEmitterPreservesBlockScopeAndControlFlow(t *testing.T) {
 	for _, expected := range []string{
 		"while __lox_truthy(__lox_binary(\"<\", __lox_globals.get(\"i\"), 2.0)):",
 		"__lox_env_1 = _LoxEnv(__lox_globals)",
-		"if __lox_truthy(__lox_binary(\"==\", __lox_env_1.get(\"i\"), 0.0)):",
+		"if __lox_truthy(__lox_binary(\"==\", __lox_globals.get(\"i\"), 0.0)):",
 		"else:",
 	} {
 		if !strings.Contains(source, expected) {
@@ -135,6 +135,43 @@ func TestPythonEmitterPreservesBlockScopeAndControlFlow(t *testing.T) {
 		}
 	}
 	assertPythonSyntax(t, source)
+}
+
+func TestPythonEmitterUsesResolvedGlobalBindings(t *testing.T) {
+	source := `
+		var value = "global";
+		{
+			fun readValue() { print value; }
+			var value = "local";
+			readValue();
+		}
+	`
+	generated, err := transpileSource(source)
+	if err != nil {
+		t.Fatalf("transpile source: %v", err)
+	}
+	if !strings.Contains(generated, `__lox_globals.get("value")`) {
+		t.Fatal("function reference was not emitted as a resolved global lookup")
+	}
+	if got, want := runGeneratedPython(t, generated), "global\n"; got != want {
+		t.Fatalf("generated output: got %q, want %q", got, want)
+	}
+
+	statements, err := parseSource(source)
+	if err != nil {
+		t.Fatalf("parse source: %v", err)
+	}
+	var output strings.Builder
+	interpreter := NewInterpreter(&output)
+	if err := NewResolver(interpreter).Resolve(statements); err != nil {
+		t.Fatalf("resolve source: %v", err)
+	}
+	if err := interpreter.Interpret(statements); err != nil {
+		t.Fatalf("interpret source: %v", err)
+	}
+	if got, want := output.String(), "global\n"; got != want {
+		t.Fatalf("interpreter output: got %q, want %q", got, want)
+	}
 }
 
 func TestPythonEmitterClassesAndInheritance(t *testing.T) {

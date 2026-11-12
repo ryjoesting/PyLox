@@ -57,7 +57,7 @@ Each stage is intended to be a separate commit.
 - **Complete when:** golden tests cover nested scopes, closures, recursion, and
   control flow, and output passes syntax validation.
 
-### 5. Transpile classes and inheritance (in progress)
+### 5. Transpile classes and inheritance (complete)
 
 - Emit classes, initializers, methods, `this`, `super`, inheritance, and
   dynamic fields.
@@ -65,7 +65,7 @@ Each stage is intended to be a separate commit.
 - **Complete when:** tests cover the repository's class and inheritance
   constructs and output passes syntax validation.
 
-### 6. Expose end-to-end transpilation
+### 6. Expose end-to-end transpilation (in progress)
 
 - Add the `transpile` CLI and `-o` output option, retaining the agreed run and
   REPL behavior.

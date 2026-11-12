@@ -10,6 +10,8 @@ type pythonEmitter struct {
 	builder         strings.Builder
 	nextFunction    int
 	nextEnvironment int
+	locals          map[Expr]int
+	globals         map[Expr]struct{}
 }
 
 func (emitter *pythonEmitter) expression(expression Expr, environment string) (string, error) {
@@ -18,6 +20,12 @@ func (emitter *pythonEmitter) expression(expression Expr, environment string) (s
 		value, err := emitter.expression(expression.Value, environment)
 		if err != nil {
 			return "", err
+		}
+		if depth, ok := emitter.locals[expression]; ok {
+			return fmt.Sprintf("%s.assign_at(%d, %s, %s)", environment, depth, strconv.Quote(expression.Name.Lexeme), value), nil
+		}
+		if _, ok := emitter.globals[expression]; ok {
+			return fmt.Sprintf("__lox_globals.assign(%s, %s)", strconv.Quote(expression.Name.Lexeme), value), nil
 		}
 		return fmt.Sprintf("%s.assign(%s, %s)", environment, strconv.Quote(expression.Name.Lexeme), value), nil
 	case *Binary:
@@ -117,6 +125,9 @@ func (emitter *pythonEmitter) expression(expression Expr, environment string) (s
 	case *Super:
 		return fmt.Sprintf("__lox_super(%s, %s)", environment, strconv.Quote(expression.Method.Lexeme)), nil
 	case *This:
+		if depth, ok := emitter.locals[expression]; ok {
+			return fmt.Sprintf("%s.get_at(%d, \"this\")", environment, depth), nil
+		}
 		return environment + `.get("this")`, nil
 	case *Unary:
 		right, err := emitter.expression(expression.Right, environment)
@@ -125,6 +136,12 @@ func (emitter *pythonEmitter) expression(expression Expr, environment string) (s
 		}
 		return fmt.Sprintf("__lox_unary(%s, %s)", strconv.Quote(expression.Operator.Lexeme), right), nil
 	case *Variable:
+		if depth, ok := emitter.locals[expression]; ok {
+			return fmt.Sprintf("%s.get_at(%d, %s)", environment, depth, strconv.Quote(expression.Name.Lexeme)), nil
+		}
+		if _, ok := emitter.globals[expression]; ok {
+			return fmt.Sprintf("__lox_globals.get(%s)", strconv.Quote(expression.Name.Lexeme)), nil
+		}
 		return fmt.Sprintf("%s.get(%s)", environment, strconv.Quote(expression.Name.Lexeme)), nil
 	default:
 		return "", fmt.Errorf("unsupported Lox expression %T", expression)
@@ -140,7 +157,7 @@ func transpileSource(source string) (string, error) {
 }
 
 func emitPython(program *compiledProgram) (string, error) {
-	emitter := &pythonEmitter{}
+	emitter := &pythonEmitter{locals: program.locals, globals: program.globals}
 	emitter.builder.WriteString(pythonValueRuntime)
 	emitter.builder.WriteString(pythonEnvironmentRuntime)
 	emitter.builder.WriteString("\n\n__lox_globals = _LoxEnv()\n")
