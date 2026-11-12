@@ -22,14 +22,22 @@ type Resolver struct {
 	currentFunc  resolverFunctionType
 	currentClass resolverClassType
 	firstError   error
+	locals       map[Expr]int
+	globals      map[Expr]struct{}
 }
 
 func NewResolver(interpreter *Interpreter) *Resolver {
-	return &Resolver{interpreter: interpreter}
+	return &Resolver{
+		interpreter: interpreter,
+		locals:      make(map[Expr]int),
+		globals:     make(map[Expr]struct{}),
+	}
 }
 
 func (resolver *Resolver) Resolve(statements []Stmt) error {
 	resolver.firstError = nil
+	resolver.locals = make(map[Expr]int)
+	resolver.globals = make(map[Expr]struct{})
 	for _, statement := range statements {
 		resolver.resolveStmt(statement)
 	}
@@ -272,11 +280,18 @@ func (resolver *Resolver) define(name *Token) {
 func (resolver *Resolver) resolveLocal(expression Expr, name *Token) {
 	for index := len(resolver.scopes) - 1; index >= 0; index-- {
 		if _, ok := resolver.scopes[index][name.Lexeme]; ok {
-			resolver.interpreter.Resolve(expression, len(resolver.scopes)-1-index)
+			depth := len(resolver.scopes) - 1 - index
+			resolver.locals[expression] = depth
+			if resolver.interpreter != nil {
+				resolver.interpreter.Resolve(expression, depth)
+			}
 			return
 		}
 	}
-	resolver.interpreter.ResolveGlobal(expression)
+	resolver.globals[expression] = struct{}{}
+	if resolver.interpreter != nil {
+		resolver.interpreter.ResolveGlobal(expression)
+	}
 }
 
 func (resolver *Resolver) report(token *Token, message string) {

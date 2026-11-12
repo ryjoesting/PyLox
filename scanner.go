@@ -405,16 +405,18 @@ func run(src string) {
 }
 
 func runSource(src string) error {
-	statements, err := parseSource(src)
+	program, err := compileSource(src)
 	if err != nil {
 		return err
 	}
 
-	resolver := NewResolver(interpreter)
-	if err := resolver.Resolve(statements); err != nil {
-		return err
+	for expression, depth := range program.locals {
+		interpreter.Resolve(expression, depth)
 	}
-	return interpreter.Interpret(statements)
+	for expression := range program.globals {
+		interpreter.ResolveGlobal(expression)
+	}
+	return interpreter.Interpret(program.statements)
 }
 
 func parseSource(src string) ([]Stmt, error) {
