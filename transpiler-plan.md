@@ -30,7 +30,7 @@ Each stage is intended to be a separate commit.
   front-end error, existing interpreter behavior remains intact, and Go tests
   pass.
 
-### 2. Add Python source support helpers (in progress)
+### 2. Add Python source support helpers (complete)
 
 - Add only the self-contained Python helper definitions needed to express Lox
   behavior that Python does not directly provide, such as Lox truthiness,
@@ -39,7 +39,7 @@ Each stage is intended to be a separate commit.
 - **Complete when:** focused tests verify emitted helper source and generated
   source remains valid Python syntax; generated programs do not need to be run.
 
-### 3. Transpile expressions
+### 3. Transpile expressions (in progress)
 
 - Implement an AST-based emitter for every expression node.
 - Preserve precedence, associativity, evaluation order, short-circuiting, and

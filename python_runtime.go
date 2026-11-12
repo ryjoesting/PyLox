@@ -8,6 +8,21 @@ def __lox_truthy(value):
     return value is not None and value is not False
 
 
+def __lox_logic(operator, left, right):
+    value = left()
+    if operator == "or" and __lox_truthy(value):
+        return value
+    if operator == "and" and not __lox_truthy(value):
+        return value
+    return right()
+
+
+def __lox_conditional(condition, then_branch, else_branch):
+    if __lox_truthy(condition):
+        return then_branch()
+    return else_branch()
+
+
 def __lox_string(value):
     if value is None:
         return "nil"
