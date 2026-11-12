@@ -10,10 +10,7 @@ import (
 
 func assertPythonSyntax(t *testing.T, source string) {
 	t.Helper()
-	python, err := exec.LookPath("python")
-	if err != nil {
-		t.Skip("Python is unavailable for generated-source syntax validation")
-	}
+	python := pythonExecutable(t)
 	command := exec.Command(python, "-c", "import ast,sys; ast.parse(sys.stdin.read())")
 	command.Stdin = strings.NewReader(source)
 	if output, err := command.CombinedOutput(); err != nil {
@@ -21,12 +18,22 @@ func assertPythonSyntax(t *testing.T, source string) {
 	}
 }
 
-func runGeneratedPython(t *testing.T, source string) string {
+func pythonExecutable(t *testing.T) string {
 	t.Helper()
 	python, err := exec.LookPath("python")
 	if err != nil {
-		t.Skip("Python is unavailable for generated-source execution")
+		t.Fatalf("Python 3.10 or later is required for transpiler tests: %v", err)
 	}
+	versionCheck := exec.Command(python, "-c", "import sys; raise SystemExit(sys.version_info < (3, 10))")
+	if output, err := versionCheck.CombinedOutput(); err != nil {
+		t.Fatalf("Python 3.10 or later is required for transpiler tests: %v\n%s", err, output)
+	}
+	return python
+}
+
+func runGeneratedPython(t *testing.T, source string) string {
+	t.Helper()
+	python := pythonExecutable(t)
 	command := exec.Command(python, "-c", "import sys; exec(compile(sys.stdin.read(), '<transpiled>', 'exec'))")
 	command.Stdin = strings.NewReader(source)
 	output, err := command.CombinedOutput()
@@ -34,6 +41,31 @@ func runGeneratedPython(t *testing.T, source string) string {
 		t.Fatalf("generated Python failed: %v\n%s", err, output)
 	}
 	return strings.ReplaceAll(string(output), "\r\n", "\n")
+}
+
+func assertTranspilationMatchesInterpreter(t *testing.T, source string) {
+	t.Helper()
+	generated, err := transpileSource(source)
+	if err != nil {
+		t.Fatalf("transpile source: %v", err)
+	}
+	assertPythonSyntax(t, generated)
+
+	statements, err := parseSource(source)
+	if err != nil {
+		t.Fatalf("parse source for interpreter: %v", err)
+	}
+	var expected strings.Builder
+	interpreter := NewInterpreter(&expected)
+	if err := NewResolver(interpreter).Resolve(statements); err != nil {
+		t.Fatalf("resolve source: %v", err)
+	}
+	if err := interpreter.Interpret(statements); err != nil {
+		t.Fatalf("interpret source: %v", err)
+	}
+	if got := runGeneratedPython(t, generated); got != expected.String() {
+		t.Fatalf("generated output:\n got: %q\nwant: %q", got, expected.String())
+	}
 }
 
 func TestPythonEmitterExpressions(t *testing.T) {
@@ -283,6 +315,51 @@ func TestPythonEmitterClassesMatchInterpreterExamples(t *testing.T) {
 	}
 }
 
+func TestTranspilationPreservesLoxExpressionSemantics(t *testing.T) {
+	tests := []struct {
+		name   string
+		source string
+	}{
+		{
+			name: "truthiness and lazy operators",
+			source: `
+				var value = "unchanged";
+				print 0 ? "truthy" : "falsey";
+				print "" ? "truthy" : "falsey";
+				print true or (value = "wrong");
+				print false and missing;
+				print true ? "chosen" : missing;
+				print value;
+			`,
+		},
+		{
+			name: "assignment and comma evaluation",
+			source: `
+				var count = 0;
+				fun increment() {
+					count = count + 1;
+					return count;
+				}
+				print (increment(), increment(), count);
+			`,
+		},
+		{
+			name: "strict equality and number formatting",
+			source: `
+				print 1 == true;
+				print 1 != "1";
+				print 1 / 0;
+				print 0 / 0;
+			`,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			assertTranspilationMatchesInterpreter(t, test.source)
+		})
+	}
+}
+
 func TestTranspiledProgramsMatchBundledExamples(t *testing.T) {
 	entries, err := os.ReadDir(filepath.Join("lox_programs"))
 	if err != nil {
@@ -298,27 +375,7 @@ func TestTranspiledProgramsMatchBundledExamples(t *testing.T) {
 			if err != nil {
 				t.Fatalf("read example: %v", err)
 			}
-			generated, err := transpileSource(string(source))
-			if err != nil {
-				t.Fatalf("transpile example: %v", err)
-			}
-			assertPythonSyntax(t, generated)
-
-			statements, err := parseSource(string(source))
-			if err != nil {
-				t.Fatalf("parse example for interpreter: %v", err)
-			}
-			var expected strings.Builder
-			interpreter := NewInterpreter(&expected)
-			if err := NewResolver(interpreter).Resolve(statements); err != nil {
-				t.Fatalf("resolve example: %v", err)
-			}
-			if err := interpreter.Interpret(statements); err != nil {
-				t.Fatalf("interpret example: %v", err)
-			}
-			if got := runGeneratedPython(t, generated); got != expected.String() {
-				t.Fatalf("generated output:\n got: %q\nwant: %q", got, expected.String())
-			}
+			assertTranspilationMatchesInterpreter(t, string(source))
 		})
 	}
 }

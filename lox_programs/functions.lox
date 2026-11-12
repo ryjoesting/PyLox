@@ -1,0 +1,19 @@
+// Recursion, returned values, and mutable closures.
+fun factorial(value) {
+  if (value <= 1) return 1;
+  return value * factorial(value - 1);
+}
+
+fun makeCounter() {
+  var count = 0;
+  fun next() {
+    count = count + 1;
+    return count;
+  }
+  return next;
+}
+
+var next = makeCounter();
+print factorial(5);
+print next();
+print next();

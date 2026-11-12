@@ -1,0 +1,12 @@
+// Operators, truthiness, short-circuiting, and expression values.
+var count = 2;
+print count * 3 + 1;
+print "lox" + " to python";
+print false or "fallback";
+print true and count;
+print true ? "selected" : "other";
+fun increment() {
+  count = count + 1;
+  return count;
+}
+print (increment(), increment(), count);

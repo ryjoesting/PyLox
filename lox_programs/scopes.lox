@@ -1,0 +1,11 @@
+// Lexical lookup stays bound to the declaration scope.
+var value = "global";
+{
+  fun readValue() {
+    print value;
+  }
+
+  var value = "local";
+  readValue();
+  print value;
+}

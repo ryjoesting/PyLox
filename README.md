@@ -1,492 +1,81 @@
-# GoLox
+# PyLox
 
-GoLox is an implementation of the Lox language from *Crafting Interpreters*.
+PyLox transpiles Lox programs into standalone Python source files. The Go
+front end scans, parses, and resolves a Lox program before emitting Python
+3.10+ code with the helpers needed to preserve Lox semantics.
 
 ## Requirements
 
 - Go 1.27.1 or later
-- No third-party Go packages are required.
+- Python 3.10 or later for running generated files and the transpiler tests
+- No third-party Go dependencies
 
-Install Go from the official instructions:
+## Transpile a program
 
-https://go.dev/doc/install
+Run these commands from the repository root:
 
-After installation, verify Go is available:
-
-```text
-go version
-```
-
-This project was built on a Windows 11, version 25H2 machine. Instructions may differ slightly for Mac or Linux but the core principle is the same. For questions, consult the Go documentation.
-
-## Run the Project
-
-Open PowerShell or Command Prompt (or Terminal) and change to the GoLox project directory:
-
-```text
-cd "C:\Users\{Path to Your Project}\golox"
-```
-
-Start the interactive prompt:
-
-```text
-go run .
-```
-
-At the `>` prompt, enter Lox source code. Press `Ctrl+C` to stop the program.
-
-To scan a source file, provide its path as the first argument. The repository includes `test_src_code.lox`:
-
-```text
-go run . test_src_code.lox
-```
-
-You can also provide an absolute or relative path to another `.lox` source file:
-
-```text
-go run . path\to\your\source.lox
-```
-
-Several runnable examples are in the [`lox_programs`](C:/Users/ryjoe/OneDrive%20-%20The%20University%20of%20Alabama/Documents/Academic/CS%20403%20Programming%20Languages/golox/lox_programs) directory:
-
-```text
-go run . "lox_programs\basics.lox"
-go run . "lox_programs\loops.lox"
-go run . "lox_programs\closures.lox"
-go run . "lox_programs\classes.lox"
-```
-
-## Transpile to Python
-
-Use the `transpile` command to write a standalone Python source file targeting
-Python 3.10 or later:
-
-```text
+```powershell
 go run . transpile "lox_programs\basics.lox"
+python "lox_programs\basics.py"
 ```
 
-By default, the generated file is written beside the Lox input with a `.py`
-extension (for example, `lox_programs\basics.py`). Choose another output path
-with `-o`:
+By default, the `.py` file is written beside the input with the same base
+name. Choose a different path with `-o`:
 
-```text
+```powershell
 go run . transpile "lox_programs\classes.lox" -o "output\classes.py"
+python "output\classes.py"
 ```
 
-The generated source includes its Lox compatibility helpers and does not
-require an installed PyLox runtime package. Use `go run . run <script.lox>` to
-run a Lox file with the interpreter. For compatibility, `go run . <script.lox>`
-continues to run the interpreter, and `go run .` starts the REPL.
+Generated files include their compatibility runtime and do not depend on an
+installed PyLox package. Python output files are ignored by Git under
+`lox_programs/` to keep generated artifacts out of the source tree.
 
-The program parses and executes complete Lox statements. Expression statements
-must end with `;` and discard their result. Print statements display their
-evaluated value, for example `print 1 + 2;` prints `3`. Global variables can
-be declared with `var name = value;` and read by name; declarations without an
-initializer contain `nil`. Global bindings are stored in an environment for
-the lifetime of the interpreter, and redefining a global replaces its value.
-Assignments such as `name = value;` update existing variables and evaluate to
-the assigned value; assignment is right-associative and cannot create a new
-variable. Braced blocks create lexical scopes, so variables declared inside a
-block are local to it; nested scopes can read and assign enclosing variables,
-and inner declarations shadow outer ones.
-Function declarations use `fun name(parameters) { ... }`; functions are
-first-class values, support recursion and closures, and return with `return
-expression;` or `return;`. Calls evaluate arguments left to right, require an
-exact parameter count, and support at most 255 arguments. Returning from
-top-level code is rejected before execution by the resolver. Calling a
-non-callable value or passing the wrong number of arguments reports a runtime
-error.
-Classes are declared with `class Name { ... }`. Methods omit the `fun` keyword
-and can read or update instance state through `this`. A class may inherit from
-another class with `<`; inherited methods can be overridden and called
-explicitly with `super.method()`. Classes are callable and create instances;
-instances support dynamically-added fields and property access:
+The CLI also retains the Go interpreter for comparison:
 
-```lox
-class Counter {
-  init(start) {
-    this.value = start;
-  }
-
-  increment() {
-    this.value = this.value + 1;
-  }
-}
-
-var counter = Counter(0);
-counter.increment();
-print counter.value;  // 1
+```powershell
+go run . run "lox_programs\basics.lox"
 ```
 
-An `init` method is an optional initializer. Its parameter count determines
-the number of arguments accepted by the class call, and it always returns the
-new instance. Fields take precedence over methods when a property is read.
-Extracted methods remain bound to the instance from which they were obtained.
-`this` is only valid inside a class method. `super` is only valid inside a
-subclass method, and its superclass must evaluate to a class at runtime.
-Before execution, GoLox resolves local variable references lexically. This
-means a function uses the scope where each name is defined, even when the
-function is called from a different nested scope. The resolver reports
-duplicate local declarations, reads of a local variable in its own initializer,
-and top-level `return` statements before any program statements execute.
-Conditional statements use `if (condition) statement` with an optional `else`
-branch. Only the selected branch executes, and an `else` binds to the nearest
-unmatched `if`.
-Logical `or` and `and` operators short-circuit from left to right and return
-operand values, with `or` having lower precedence than `and`.
-While loops use `while (condition) statement`, re-evaluating the condition
-before each iteration and accepting any statement as the body.
-C-style `for` loops support optional initializer, condition, and increment
-clauses. They are desugared into scoped blocks and `while` loops, so a
-variable declared in `for (var i = ...; ...; ...)` is local to the loop.
-Syntax and runtime errors are written to stderr, and the REPL continues after
-an error.
+The legacy `go run . <file.lox>` invocation still runs the interpreter, and
+`go run .` starts its REPL.
 
-When running a file, the process uses exit code `65` for file or syntax errors,
-`70` for runtime errors, and `0` for success.
+## Test
 
-## Lox Language Guide
+Run the Go test suite and static analysis from the repository root:
 
-Lox is a small, dynamically typed language. Programs are made of statements,
-and most statements end with a semicolon. Whitespace is insignificant, and
-comments can be written with `//` or `/* ... */`.
-
-### Values and expressions
-
-Lox has numbers, strings, booleans, and `nil`:
-
-```lox
-var count = 3;
-var message = "hello";
-var ready = true;
-var missing = nil;
-```
-
-Variables can be reassigned, and an assignment produces the assigned value:
-
-```lox
-count = count + 1;
-print count;       // 4
-print count = 10;  // 10
-```
-
-Arithmetic uses `+`, `-`, `*`, and `/`. The `+` operator adds two numbers or
-concatenates two strings. Comparisons use `<`, `<=`, `>`, and `>=`; equality
-uses `==` and `!=`. Parentheses group expressions, `!` negates truthiness, and
-`-` negates a number:
-
-```lox
-print (2 + 3) * 4;       // 20
-print "Lox" + " works";  // Lox works
-print 3 < 5;             // true
-print !false;            // true
-```
-
-`nil` and `false` are falsey. Every other value, including `0` and empty
-strings, is truthy. The logical operators `and` and `or` short-circuit and
-return one of their operands:
-
-```lox
-var name = nil;
-print name or "Guest";  // Guest
-print true and 42;      // 42
-```
-
-The comma operator evaluates expressions from left to right and returns the
-last value. The conditional operator evaluates its condition and then only
-the selected branch; it associates from right to left:
-
-```lox
-print (1, 2, 3);              // 3
-print true ? "yes" : "no";    // yes
-```
-
-### Output and variables
-
-Use `print` to display a value. A standalone expression is evaluated and its
-result is discarded:
-
-```lox
-print "Welcome!";
-2 + 2;  // evaluated, but not printed
-```
-
-`var` creates a variable. An initializer is optional; without one, the value
-is `nil`. Variables declared in a block are local to that block:
-
-```lox
-var scope = "global";
-{
-  var scope = "local";
-  print scope;  // local
-}
-print scope;    // global
-```
-
-### Conditions and loops
-
-Use `if` with an optional `else` to choose which statement runs. Braces group
-multiple statements into a block:
-
-```lox
-if (score >= 60) {
-  print "pass";
-} else {
-  print "try again";
-}
-```
-
-`while` repeats while its condition is truthy. A `for` loop has optional
-initializer, condition, and increment clauses:
-
-```lox
-var i = 0;
-while (i < 3) {
-  print i;
-  i = i + 1;
-}
-
-for (var j = 0; j < 3; j = j + 1) {
-  print j;
-}
-```
-
-### Functions
-
-Declare a function with `fun`, list its parameters in parentheses, and put its
-body in braces. Use `return` to produce a result; `return;` returns `nil`.
-Functions can be stored in variables, passed as arguments, called recursively,
-and can remember variables from their defining scope:
-
-```lox
-fun greet(name) {
-  return "Hello, " + name + "!";
-}
-
-print greet("Ada");  // Hello, Ada!
-
-fun factorial(n) {
-  if (n <= 1) return 1;
-  return n * factorial(n - 1);
-}
-
-print factorial(5);  // 120
-```
-
-Calls can have zero or more arguments, and the number of arguments must match
-the number of parameters:
-
-```lox
-fun add(a, b) {
-  return a + b;
-}
-
-print add(2, 3);  // 5
-```
-
-Functions support closures. An inner function can read and update variables
-from an enclosing function even after the outer function returns:
-
-```lox
-fun makeCounter() {
-  var value = 0;
-  fun next() {
-    value = value + 1;
-    return value;
-  }
-  return next;
-}
-
-var counter = makeCounter();
-print counter();  // 1
-print counter();  // 2
-```
-
-### Classes
-
-Classes bundle instance data with methods. A class body contains methods whose
-names, parameters, and bodies follow the same rules as functions, but methods
-are declared without `fun`. Use `.` to read a property or call a method.
-Assigning to a property creates or updates an instance field. A class can
-inherit from another class with `<`; subclasses inherit methods, can override
-them, and can call the overridden implementation with `super.method()`:
-
-```lox
-class Person {
-  init(name) {
-    this.name = name;
-  }
-
-  sayName() {
-    print this.name;
-  }
-}
-
-var jane = Person("Jane");
-jane.sayName();       // Jane
-jane.species = "Lox";
-print jane.species;   // Lox
-```
-
-Inheritance and `super` dispatch:
-
-```lox
-class Doughnut {
-  cook() {
-    print "Fry until golden brown.";
-  }
-}
-
-class BostonCream < Doughnut {
-  cook() {
-    super.cook();
-    print "Pipe full of custard and coat with chocolate.";
-  }
-}
-
-BostonCream().cook();
-```
-
-Property access is dynamic. Fields take precedence over methods; if a field
-does not exist, GoLox searches the class and its superclasses for a method.
-Reading or assigning properties on non-instance values is a runtime error, as
-is reading a missing property. A method can be stored in a variable and called
-later; it retains its original `this` instance:
-
-```lox
-var callback = jane.sayName;
-callback();           // Jane
-```
-
-### A complete small program
-
-The following example combines variables, a function, a loop, and output:
-
-```lox
-fun sumTo(limit) {
-  var total = 0;
-  var number = 1;
-  while (number <= limit) {
-    total = total + number;
-    number = number + 1;
-  }
-  return total;
-}
-
-print sumTo(5);  // 15
-```
-
-## Run the Tests
-
-Run all tests for this GoLox module from the project directory:
-
-```text
+```powershell
 go test ./...
+go vet ./...
 ```
 
-A successful test run ends with output similar to:
+The transpiler tests use Python to syntax-check and execute generated output,
+then compare its output with the Go interpreter. They cover every `.lox`
+example in `lox_programs/` plus focused cases for expression semantics,
+lexical scopes, closures, functions, classes, inheritance, and CLI output.
 
-```text
-PASS
-ok      golox
-```
+## Examples
 
-To see each scanner test while it runs:
+The [`lox_programs/`](./lox_programs/) directory contains small programs used
+by the test suite:
 
-```text
-go test -v
-```
+- `basics.lox` — variables, arithmetic, logic, and conditionals
+- `expressions.lox` — truthiness, short-circuiting, conditionals, and comma
+  expressions
+- `functions.lox` — recursion and mutable closures
+- `scopes.lox` — lexical binding and shadowing
+- `loops.lox` — loops and function calls
+- `closures.lox` — closures capturing and updating local state
+- `classes.lox` — fields, methods, inheritance, and `super`
 
-To run only scanner tests:
+## Project structure
 
-```text
-go test -run TestScanner -v
-```
-
-To run class-related parser, resolver, and interpreter tests:
-
-```text
-go test -run 'Class|Classes|This|Initializer|Method' -v
-```
-
-The expression AST tests can be run with:
-
-```text
-go test -run 'TestExpression|TestAstPrinter' -v
-```
-
-The parser and statement tests can be run with:
-
-```text
-go test -run TestParser -v
-```
-
-Statement tests can also be run with:
-
-```text
-go test -run 'TestParserBuildsStatements|TestInterpreterExecutesStatements' -v
-```
-
-The interpreter tests can be run with:
-
-```text
-go test -run TestInterpreter -v
-```
-
-## Current Implementation
-
-The project includes a scanner, expression and statement ASTs, a recursive
-descent parser, a resolver, a tree-walk interpreter, and a Python source
-transpiler. The transpiler consumes the resolved AST, emits standalone Python
-source, and preserves Lox lexical bindings and runtime behavior with generated
-compatibility helpers. The AST uses sealed
-`Expr` and `Stmt` interfaces with expression nodes for binary operations,
-calls, conditionals, comma expressions, assignments, property access, property
-assignment, `this`, `super`, grouping, literals, logical operators, unary
-operators, and variables. Statement nodes include blocks, classes, expressions,
-functions, conditionals, prints, returns, variables, and loops. An `AstPrinter`
-renders expressions as parenthesized tree structures such as
-`(* (- 123) (group 45.67))`.
-
-The parser uses recursive descent with precedence levels for comma, conditional,
-equality, comparison, term, factor, unary, and primary expressions, then wraps
-expressions in calls and declarations, expression statements, print statements,
-or function declarations. The interpreter executes multiple statements in
-order, evaluates literals, operators, logical operators, global variables,
-assignments, lexical block scopes, conditionals, function calls, returns,
-recursion, and closures through a chained environment abstraction. A
-pre-interpretation resolver binds local variables to lexical distances and
-reports static scope errors; runtime errors still include operator,
-variable, and line context.
-Statement-level synchronization recovers at semicolons and known statement
-starters.
-
-## Project Files
-
-- `golox.go` - Program entry point and command-line handling.
-- `compiler.go` - Shared scan, parse, and resolution pipeline.
-- `python_emitter.go` - Python source emitter for resolved Lox ASTs.
-- `python_runtime.go` - Embedded Lox-compatible runtime helpers for Python output.
-- `transpile_cli.go` - Transpilation command and output-file handling.
-- `scanner.go` - Token definitions, lexical scanner, REPL, and file execution.
-- `ast.go` - Expression AST nodes and the `ExprVisitor` interface.
-- `statement.go` - Statement AST nodes and the `StmtVisitor` interface.
-- `ast_printer.go` - Visitor-based AST printer for inspecting tree structure.
-- `ast_test.go` - AST structure and printer tests.
-- `parser.go` - Recursive-descent program/statement parser and structured parse errors.
-- `parser_test.go` - Parser precedence, associativity, primary expression, and syntax error tests.
-- `environment.go` - Chained lexical environments and undefined-variable lookup errors.
-- `environment_test.go` - Environment definition, nesting, assignment, nil, and lookup-error tests.
-- `interpreter.go` - Expression/statement evaluator, runtime errors, and value formatting.
-- `function.go` - Callable interface and user-defined function closures.
-- `class.go` - Runtime classes, inheritance, instances, fields, methods, and bound methods.
-- `resolver.go` - Static lexical scope resolver and binding diagnostics.
-- `interpreter_test.go` - Expression evaluation, runtime error, and pipeline tests.
-- `python_emitter_test.go` - Transpiler output, Python syntax, and example-program tests.
-- `transpile_cli_test.go` - Transpiler CLI argument and file-output tests.
-- `resolver_test.go` - Lexical binding, closure, and resolver diagnostic tests.
-- `statement_test.go` - Statement parsing and execution tests.
-- `scanner_test.go` - Built-in Go tests for scanner behavior.
-- `test_src_code.lox` - Example Lox source file.
-- `lox_programs/` - Small runnable programs demonstrating core language features.
-- `go.mod` - Go module definition.
+- `scanner.go`, `parser.go`, `ast.go`, and `statement.go` implement the Lox
+  front end.
+- `resolver.go` records lexical bindings used by both the interpreter and
+  transpiler.
+- `compiler.go` provides the shared scan/parse/resolve pipeline.
+- `python_emitter.go` and `python_runtime.go` generate standalone Python.
+- `transpile_cli.go` handles transpilation and output-file selection.
+- `interpreter.go`, `function.go`, and `class.go` retain the Go interpreter as
+  a compatibility command and a behavioral reference for tests.
