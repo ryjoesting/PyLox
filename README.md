@@ -91,3 +91,8 @@ fixtures:
 - `transpile_cli.go` handles transpilation and output-file selection.
 - `interpreter.go`, `function.go`, and `class.go` provide the `pylox run`
   command and a behavioral reference for tests.
+
+
+# AI use statement
+
+Copilot was used to help write test-cases for the different transpilation features and verify that everything was working properly. Additionally, Gemini Hydrogen was used for debugging and explaining some crashes or runtime errors during development. Lastly, AI tools were used to explain the process of transpilation and help summarize and direct to online resources on the subject.
